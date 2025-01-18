@@ -7,7 +7,7 @@ A system monitoring dashboard built with SvelteKit, featuring real-time updates 
 - **Frontend Framework**: SvelteKit 2.x with Svelte 5
 - **Styling**: Tailwind CSS
 - **Real-time Communication**: MQTT
-- **Charting**: Recharts
+- **Charting**: uPlot
 - **Build Tool**: Vite
 
 ## Prerequisites
@@ -46,7 +46,9 @@ src/
 │   ├── components/
 │   │   ├── ActiveCalls.svelte    # Active calls monitoring
 │   │   ├── Recorders.svelte      # Recording system status
-│   │   └── SystemOverview.svelte # System status dashboard
+│   │   ├── StatusDots.svelte     # Header status indicators
+│   │   ├── SystemOverview.svelte # System status dashboard
+│   │   └── ThemeToggle.svelte    # Dark/light mode toggle
 │   └── server/
 │       └── state.svelte.js       # Server-side state management
 ├── routes/
@@ -58,18 +60,20 @@ src/
 
 ## Features
 
-- Real-time system monitoring
-- Active calls tracking
-- Recording system status
-- System overview dashboard
+- Real-time system monitoring with live status indicators
+- Active calls tracking and visualization
+- Recording system status with state indicators
+- System overview dashboard with real-time charts
 - MQTT-based real-time updates
+- Dark/light mode support
 
 ## Development Notes
 
 - The project uses SvelteKit's node adapter for deployment
 - Tailwind CSS is configured for styling
 - MQTT is used for real-time data updates
-- Recharts provides data visualization capabilities
+- uPlot provides efficient data visualization
+- Status indicators show real-time recorder states
 
 ## License
 

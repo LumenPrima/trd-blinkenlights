@@ -11,8 +11,8 @@
     "@sveltejs/adapter-node": "^5.2.12",
     "@sveltejs/kit": "^2.16.0",
     "mqtt": "^5.10.3",
-    "recharts": "^2.15.0",
     "svelte": "^5.19.0",
+    "uplot": "^1.6.31",
     "vite": "^6.0.7"
   },
   "type": "module",

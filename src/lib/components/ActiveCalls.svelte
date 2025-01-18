@@ -33,30 +33,30 @@
 
 <div>
     <h2 class="text-2xl font-bold mb-4">Active Calls</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-3 overflow-x-auto">
         {#each activeCalls as call}
-            <div class="call-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-lg font-bold">
+            <div class="call-card border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 shadow-sm min-w-0">
+                <div class="flex justify-between items-start gap-2">
+                    <h3 class="text-base font-semibold truncate">
                         {call.talkgroup_alpha_tag || `Talkgroup ${call.talkgroup}`}
                     </h3>
-                    <span class="status-badge {getCallStateClass(call)}">
+                    <span class="status-badge {getCallStateClass(call)} shrink-0">
                         {call.call_state_type}
                     </span>
                 </div>
-                <div class="space-y-1 text-sm">
-                    <p><span class="font-medium">System:</span> {call.sys_name}</p>
-                    <p><span class="font-medium">Frequency:</span> {formatFrequency(call.freq)}</p>
+                <div class="grid grid-cols-[max-content,1fr] gap-x-2 gap-y-1 text-sm mt-1">
+                    <span class="font-medium">System:</span><span class="truncate">{call.sys_name}</span>
+                    <span class="font-medium">Freq:</span><span>{formatFrequency(call.freq)}</span>
                     {#if call.talkgroup_description}
-                        <p><span class="font-medium">Description:</span> {call.talkgroup_description}</p>
+                        <span class="font-medium">Desc:</span><span class="truncate">{call.talkgroup_description}</span>
                     {/if}
                     {#if call.talkgroup_group}
-                        <p><span class="font-medium">Group:</span> {call.talkgroup_group}</p>
+                        <span class="font-medium">Group:</span><span class="truncate">{call.talkgroup_group}</span>
                     {/if}
-                    <p><span class="font-medium">Started:</span> {new Date(call.start_time * 1000).toLocaleTimeString()}</p>
-                    <p><span class="font-medium">Duration:</span> {formatDuration(call.elapsed)}</p>
+                    <span class="font-medium">Start:</span><span>{new Date(call.start_time * 1000).toLocaleTimeString()}</span>
+                    <span class="font-medium">Dur:</span><span>{formatDuration(call.elapsed)}</span>
                     {#if call.unit}
-                        <p><span class="font-medium">Unit:</span> {call.unit}</p>
+                        <span class="font-medium">Unit:</span><span class="truncate">{call.unit}</span>
                     {/if}
                 </div>
             </div>
@@ -65,24 +65,24 @@
 
     {#if finishedCalls.length > 0}
         <h3 class="text-xl font-bold mt-8 mb-4">Recent Calls</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-75">
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-3 overflow-x-auto opacity-75">
             {#each finishedCalls as call}
-                <div class="call-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900 shadow-sm">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="text-lg font-bold">
+                <div class="call-card border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-900 shadow-sm min-w-0">
+                    <div class="flex justify-between items-start gap-2">
+                        <h3 class="text-base font-semibold truncate">
                             {call.talkgroup_alpha_tag || `Talkgroup ${call.talkgroup}`}
                         </h3>
-                        <span class="status-badge finished">Finished</span>
+                        <span class="status-badge finished shrink-0">Finished</span>
                     </div>
-                    <div class="space-y-1 text-sm">
-                        <p><span class="font-medium">System:</span> {call.sys_name}</p>
-                        <p><span class="font-medium">Frequency:</span> {formatFrequency(call.freq)}</p>
+                    <div class="grid grid-cols-[max-content,1fr] gap-x-2 gap-y-1 text-sm mt-1">
+                        <span class="font-medium">System:</span><span class="truncate">{call.sys_name}</span>
+                        <span class="font-medium">Freq:</span><span>{formatFrequency(call.freq)}</span>
                         {#if call.talkgroup_description}
-                            <p><span class="font-medium">Description:</span> {call.talkgroup_description}</p>
+                            <span class="font-medium">Desc:</span><span class="truncate">{call.talkgroup_description}</span>
                         {/if}
-                        <p><span class="font-medium">Started:</span> {new Date(call.start_time * 1000).toLocaleTimeString()}</p>
-                        <p><span class="font-medium">Duration:</span> {formatDuration(call.elapsed)}</p>
-                        <p><span class="font-medium">Ended:</span> {new Date(call.finishedAt).toLocaleTimeString()}</p>
+                        <span class="font-medium">Start:</span><span>{new Date(call.start_time * 1000).toLocaleTimeString()}</span>
+                        <span class="font-medium">Dur:</span><span>{formatDuration(call.elapsed)}</span>
+                        <span class="font-medium">End:</span><span>{new Date(call.finishedAt).toLocaleTimeString()}</span>
                     </div>
                 </div>
             {/each}
