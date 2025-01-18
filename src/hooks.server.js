@@ -24,6 +24,13 @@ async function init() {
         const data = JSON.parse(message.toString());
 
         switch (topic) {
+            case 'tr-mqtt/main/recorder':
+                // Handle individual recorder update
+                if (data.type === 'recorder' && data.recorder) {
+                    state.updateRecorders([data.recorder]);
+                    notifySubscribers();
+                }
+                break;
             case 'tr-mqtt/main/systems':
                 state.updateSystems(data.systems);
                 notifySubscribers();
