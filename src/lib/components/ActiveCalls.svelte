@@ -1,6 +1,22 @@
 <script>
-    /** @type {{ data: any }} */
+    /** @type {{ data: { calls: any[], recentCalls: any[] } }} */
     let { data } = $props();
+
+    function playAudio(call) {
+        if (!call.audio?.m4a) return;
+
+        // Create audio element and play
+        const audioBlob = new Blob(
+            [Uint8Array.from(atob(call.audio.m4a), c => c.charCodeAt(0))], 
+            { type: 'audio/mp4' }
+        );
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audioElement = new Audio(audioUrl);
+        audioElement.play();
+
+        // Clean up URL when done
+        audioElement.onended = () => URL.revokeObjectURL(audioUrl);
+    }
 
     function formatFrequency(freq) {
         return (freq / 1000000).toFixed(4) + ' MHz';
@@ -20,14 +36,10 @@
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
-    const activeCalls = $derived(
-        Array.from(data.calls.values()).filter(call => !call.finished)
-    );
+    const activeCalls = $derived(data.calls);
 
-    const finishedCalls = $derived(
-        Array.from(data.calls.values())
-            .filter(call => call.finished)
-            .sort((a, b) => b.finishedAt - a.finishedAt)
+    const recentCalls = $derived(
+        data.recentCalls.sort((a, b) => b.finishedAt - a.finishedAt)
     );
 </script>
 
@@ -38,7 +50,7 @@
             <div class="call-card p-6 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-1 min-w-0">
                 <div class="flex justify-between items-start gap-2 mb-2">
                     <h3 class="text-lg font-semibold truncate text-gray-900 dark:text-gray-100">
-                        {call.talkgroup_alpha_tag || `Talkgroup ${call.talkgroup}`}
+                        {call.talkgroup_tag || `Talkgroup ${call.talkgroup}`}
                     </h3>
                     <span class="status-badge {getCallStateClass(call)} shrink-0">
                         {call.call_state_type}
@@ -47,7 +59,7 @@
                 <div class="border-b border-gray-100/50 dark:border-gray-700/30 mb-2"></div>
                     {#if call.talkgroup_description}
                         <div class="text-sm text-gray-700 dark:text-gray-300 mb-2 truncate">
-                            {#if call.talkgroup_tag}{call.talkgroup_tag} - {/if} {call.talkgroup_description}
+                            {call.talkgroup_description}
                         </div>
                     {/if}
                     <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
@@ -71,21 +83,20 @@
         {/each}
     </div>
 
-    {#if finishedCalls.length > 0}
+    {#if recentCalls.length > 0}
         <h3 class="text-xl font-bold mt-8 mb-4">Recent Calls</h3>
         <div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-3 overflow-x-auto opacity-75">
-            {#each finishedCalls as call}
+            {#each recentCalls as call}
                 <div class="call-card border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow duration-200 ease-in-out min-w-0">
                     <div class="flex justify-between items-start gap-2 mb-2">
                         <h3 class="text-lg font-semibold truncate text-gray-900 dark:text-gray-100">
-                            {call.talkgroup_alpha_tag || `Talkgroup ${call.talkgroup}`}
+                            {call.talkgroup_tag || `Talkgroup ${call.talkgroup}`}
                         </h3>
-                        <span class="status-badge finished shrink-0">Finished</span>
                     </div>
                     <div class="border-b border-gray-100/50 dark:border-gray-700/30 mb-2"></div>
                     {#if call.talkgroup_description}
                         <div class="text-sm text-gray-700 dark:text-gray-300 mb-2 truncate">
-                            {#if call.talkgroup_tag}{call.talkgroup_tag} - {/if} {call.talkgroup_description}
+                            {call.talkgroup_description}
                         </div>
                     {/if}
                     <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
@@ -98,6 +109,21 @@
                         <div class="pt-1 text-xs text-gray-500 dark:text-gray-400">
                             {call.sys_name} - {formatFrequency(call.freq)}
                         </div>
+                        {#if call.transcription}
+                            <div class="mt-2 text-sm text-gray-700 dark:text-gray-300 italic border-l-2 border-gray-300 dark:border-gray-600 pl-2">
+                                {call.transcription}
+                            </div>
+                        {/if}
+                        <button 
+                            class="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                            on:click={() => playAudio(call)}
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Play Audio
+                        </button>
                     </div>
                 </div>
             {/each}

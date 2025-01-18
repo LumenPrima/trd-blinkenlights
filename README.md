@@ -61,6 +61,7 @@ src/
 ## Features
 
 - Real-time system monitoring with live status indicators
+- Automatic audio transcription using Whisper API
 - Active calls tracking and visualization
 - Recording system status with state indicators and material design-inspired UI
 - Numerically ordered recorder cards for consistent display
@@ -71,6 +72,7 @@ src/
 ## Development Notes
 
 - The project uses SvelteKit's node adapter for deployment
+- Audio transcription requires an OpenAI Whisper-compatible API service
 - Tailwind CSS is configured for styling
 - MQTT is used for real-time data updates
 - uPlot provides efficient data visualization
