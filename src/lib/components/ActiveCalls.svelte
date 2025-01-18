@@ -35,7 +35,7 @@
     <h2 class="text-2xl font-bold mb-4">Active Calls</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {#each activeCalls as call}
-            <div class="call-card border rounded-lg p-4 bg-white shadow-sm">
+            <div class="call-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
                 <div class="flex justify-between items-start mb-2">
                     <h3 class="text-lg font-bold">
                         {call.talkgroup_alpha_tag || `Talkgroup ${call.talkgroup}`}
@@ -67,7 +67,7 @@
         <h3 class="text-xl font-bold mt-8 mb-4">Recent Calls</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-75">
             {#each finishedCalls as call}
-                <div class="call-card border rounded-lg p-4 bg-gray-50 shadow-sm">
+                <div class="call-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900 shadow-sm">
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="text-lg font-bold">
                             {call.talkgroup_alpha_tag || `Talkgroup ${call.talkgroup}`}
@@ -96,22 +96,22 @@
     }
     
     .emergency {
-        @apply bg-red-100 text-red-800;
+        @apply bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100;
     }
     
     .encrypted {
-        @apply bg-purple-100 text-purple-800;
+        @apply bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-100;
     }
     
     .recording {
-        @apply bg-green-100 text-green-800;
+        @apply bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100;
     }
     
     .monitoring {
-        @apply bg-blue-100 text-blue-800;
+        @apply bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100;
     }
 
     .finished {
-        @apply bg-gray-100 text-gray-800;
+        @apply bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200;
     }
 </style>

@@ -26,7 +26,7 @@
     <h2 class="text-2xl font-bold mb-4">Recorders</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {#each data.recorders as recorder}
-            <div class="recorder-card border rounded-lg p-4 bg-white shadow-sm">
+            <div class="recorder-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
                 <div class="flex justify-between items-start mb-2">
                     <h3 class="text-lg font-bold">Recorder {recorder.rec_num}</h3>
                     <span class="status-badge {getStateClass(recorder.rec_state_type)}">
@@ -52,18 +52,18 @@
     }
     
     .recording {
-        @apply bg-green-100 text-green-800;
+        @apply bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100;
     }
     
     .idle {
-        @apply bg-yellow-100 text-yellow-800;
+        @apply bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100;
     }
     
     .available {
-        @apply bg-blue-100 text-blue-800;
+        @apply bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100;
     }
     
     .unknown {
-        @apply bg-gray-100 text-gray-800;
+        @apply bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200;
     }
 </style>

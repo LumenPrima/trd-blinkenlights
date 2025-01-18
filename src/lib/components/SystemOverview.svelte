@@ -10,7 +10,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     {#each data.systems as system}
-        <div class="border p-4 rounded bg-white shadow-sm">
+        <div class="border border-gray-200 dark:border-gray-700 p-4 rounded bg-white dark:bg-gray-800 shadow-sm">
             <h3 class="text-lg font-bold mb-2">{system.sys_name}</h3>
             <div class="space-y-1">
                 <p><span class="font-medium">Type:</span> {system.type.toUpperCase()}</p>
