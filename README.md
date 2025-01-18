@@ -62,7 +62,8 @@ src/
 
 - Real-time system monitoring with live status indicators
 - Active calls tracking and visualization
-- Recording system status with state indicators
+- Recording system status with state indicators and material design-inspired UI
+- Numerically ordered recorder cards for consistent display
 - System overview dashboard with real-time charts
 - MQTT-based real-time updates
 - Dark/light mode support
