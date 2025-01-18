@@ -73,4 +73,4 @@ src/
 
 ## License
 
-[License Type] - See LICENSE file for details
+MIT License - See [LICENSE](LICENSE) file for details
