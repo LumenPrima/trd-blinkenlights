@@ -35,30 +35,38 @@
     <h2 class="text-2xl font-bold mb-4">Active Calls</h2>
     <div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-3 overflow-x-auto">
         {#each activeCalls as call}
-            <div class="call-card border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 shadow-sm min-w-0">
-                <div class="flex justify-between items-start gap-2">
-                    <h3 class="text-base font-semibold truncate">
+            <div class="call-card p-6 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-1 min-w-0">
+                <div class="flex justify-between items-start gap-2 mb-2">
+                    <h3 class="text-lg font-semibold truncate text-gray-900 dark:text-gray-100">
                         {call.talkgroup_alpha_tag || `Talkgroup ${call.talkgroup}`}
                     </h3>
                     <span class="status-badge {getCallStateClass(call)} shrink-0">
                         {call.call_state_type}
                     </span>
                 </div>
-                <div class="grid grid-cols-[max-content,1fr] gap-x-2 gap-y-1 text-sm mt-1">
-                    <span class="font-medium">System:</span><span class="truncate">{call.sys_name}</span>
-                    <span class="font-medium">Freq:</span><span>{formatFrequency(call.freq)}</span>
+                <div class="border-b border-gray-100/50 dark:border-gray-700/30 mb-2"></div>
                     {#if call.talkgroup_description}
-                        <span class="font-medium">Desc:</span><span class="truncate">{call.talkgroup_description}</span>
+                        <div class="text-sm text-gray-700 dark:text-gray-300 mb-2 truncate">
+                            {#if call.talkgroup_tag}{call.talkgroup_tag} - {/if} {call.talkgroup_description}
+                        </div>
                     {/if}
-                    {#if call.talkgroup_group}
-                        <span class="font-medium">Group:</span><span class="truncate">{call.talkgroup_group}</span>
-                    {/if}
-                    <span class="font-medium">Start:</span><span>{new Date(call.start_time * 1000).toLocaleTimeString()}</span>
-                    <span class="font-medium">Dur:</span><span>{formatDuration(call.elapsed)}</span>
-                    {#if call.unit}
-                        <span class="font-medium">Unit:</span><span class="truncate">{call.unit}</span>
-                    {/if}
-                </div>
+                    <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                        {#if call.talkgroup_group}
+                            <div class="truncate">{call.talkgroup_group}</div>
+                        {/if}
+                        {#if call.unit}
+                            <div class="truncate">
+                                {call.unit}
+                                {#if call.unit_alpha_tag} - {call.unit_alpha_tag}{/if}
+                            </div>
+                        {/if}
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            Started {new Date(call.start_time * 1000).toLocaleTimeString()} · {formatDuration(call.elapsed)}
+                        </div>
+                        <div class="pt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {call.sys_name} - {formatFrequency(call.freq)}
+                        </div>
+                    </div>
             </div>
         {/each}
     </div>
@@ -67,22 +75,29 @@
         <h3 class="text-xl font-bold mt-8 mb-4">Recent Calls</h3>
         <div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-3 overflow-x-auto opacity-75">
             {#each finishedCalls as call}
-                <div class="call-card border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-900 shadow-sm min-w-0">
-                    <div class="flex justify-between items-start gap-2">
-                        <h3 class="text-base font-semibold truncate">
+                <div class="call-card border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow duration-200 ease-in-out min-w-0">
+                    <div class="flex justify-between items-start gap-2 mb-2">
+                        <h3 class="text-lg font-semibold truncate text-gray-900 dark:text-gray-100">
                             {call.talkgroup_alpha_tag || `Talkgroup ${call.talkgroup}`}
                         </h3>
                         <span class="status-badge finished shrink-0">Finished</span>
                     </div>
-                    <div class="grid grid-cols-[max-content,1fr] gap-x-2 gap-y-1 text-sm mt-1">
-                        <span class="font-medium">System:</span><span class="truncate">{call.sys_name}</span>
-                        <span class="font-medium">Freq:</span><span>{formatFrequency(call.freq)}</span>
-                        {#if call.talkgroup_description}
-                            <span class="font-medium">Desc:</span><span class="truncate">{call.talkgroup_description}</span>
-                        {/if}
-                        <span class="font-medium">Start:</span><span>{new Date(call.start_time * 1000).toLocaleTimeString()}</span>
-                        <span class="font-medium">Dur:</span><span>{formatDuration(call.elapsed)}</span>
-                        <span class="font-medium">End:</span><span>{new Date(call.finishedAt).toLocaleTimeString()}</span>
+                    <div class="border-b border-gray-100/50 dark:border-gray-700/30 mb-2"></div>
+                    {#if call.talkgroup_description}
+                        <div class="text-sm text-gray-700 dark:text-gray-300 mb-2 truncate">
+                            {#if call.talkgroup_tag}{call.talkgroup_tag} - {/if} {call.talkgroup_description}
+                        </div>
+                    {/if}
+                    <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            Started {new Date(call.start_time * 1000).toLocaleTimeString()} · {formatDuration(call.elapsed)}
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            Ended {new Date(call.finishedAt).toLocaleTimeString()}
+                        </div>
+                        <div class="pt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {call.sys_name} - {formatFrequency(call.freq)}
+                        </div>
                     </div>
                 </div>
             {/each}
@@ -92,26 +107,38 @@
 
 <style>
     .status-badge {
-        @apply px-2 py-1 rounded text-xs font-medium;
+        @apply px-3 py-1.5 rounded-full text-xs font-medium uppercase tracking-wide;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        min-width: 6rem;
+        text-align: center;
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .status-badge .icon {
+        @apply w-3 h-3;
     }
     
     .emergency {
-        @apply bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100;
+        @apply bg-red-500/10 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-500/20 dark:border-red-800/50;
     }
     
     .encrypted {
-        @apply bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-100;
+        @apply bg-purple-500/10 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-500/20 dark:border-purple-800/50;
     }
     
     .recording {
-        @apply bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100;
+        @apply bg-green-500/10 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-500/20 dark:border-green-800/50;
     }
     
     .monitoring {
-        @apply bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100;
+        @apply bg-blue-500/10 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-500/20 dark:border-blue-800/50;
     }
 
     .finished {
-        @apply bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200;
+        @apply bg-gray-500/10 dark:bg-gray-800/20 text-gray-700 dark:text-gray-400 border border-gray-500/20 dark:border-gray-700/50;
     }
 </style>
