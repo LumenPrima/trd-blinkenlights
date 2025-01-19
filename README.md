@@ -14,9 +14,12 @@ A system monitoring dashboard built with SvelteKit, featuring real-time updates 
 
 - Node.js (Latest LTS version recommended)
 - npm or yarn
+- Python 3.8+ for Crisper API service
+- CUDA-capable GPU recommended (but not required)
 
 ## Installation
 
+### Frontend Setup
 ```bash
 # Clone the repository
 git clone [repository-url]
@@ -24,6 +27,24 @@ git clone [repository-url]
 # Install dependencies
 npm install
 ```
+
+### Crisper API Service Setup
+```bash
+# Create and activate Python virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
+
+# Install Python dependencies
+cd CrisperWhisper
+pip install -r requirements.txt
+
+# Start the API service (development)
+python api.py
+```
+
+The API service will run on `http://localhost:8001`. It requires a model path to be provided when making transcription requests. The service supports both CPU and GPU (CUDA) execution, with GPU recommended for better performance.
+
+Note: The model files are not included in the repository. You'll need to provide the path to your model when making transcription requests through the API.
 
 ## Development
 
@@ -48,13 +69,19 @@ src/
 │   │   ├── Recorders.svelte      # Recording system status
 │   │   ├── StatusDots.svelte     # Header status indicators
 │   │   ├── SystemOverview.svelte # System status dashboard
-│   │   └── ThemeToggle.svelte    # Dark/light mode toggle
-│   └── server/
-│       └── state.svelte.js       # Server-side state management
+│   │   ├── ThemeToggle.svelte    # Dark/light mode toggle
+│   │   └── TranscriptionDisplay.svelte # Transcription display component
+│   ├── server/
+│   │   ├── state.svelte.js       # Server-side state management
+│   │   └── transcription.js      # Transcription processing logic
+│   └── stores/
+│       └── theme.js              # Theme management store
 ├── routes/
 │   ├── +layout.svelte           # Root layout
 │   ├── +page.server.js          # Server-side logic
-│   └── +page.svelte            # Main page component
+│   ├── +page.svelte            # Main page component
+│   └── flag-call/
+│       └── +server.js           # Flagged call endpoint
 └── app.html                     # HTML template
 ```
 
@@ -67,6 +94,9 @@ src/
 - System overview dashboard with real-time charts
 - MQTT-based real-time updates
 - Dark/light mode support
+- Real-time transcription display and processing
+- Flagged call handling and endpoint
+- Comprehensive testing suite for transcription functionality
 
 ## Development Notes
 
@@ -75,6 +105,8 @@ src/
 - MQTT is used for real-time data updates
 - uPlot provides efficient data visualization
 - Status indicators show real-time recorder states
+- Server hooks for initialization and configuration
+- Theme management through centralized store
 
 ## License
 
