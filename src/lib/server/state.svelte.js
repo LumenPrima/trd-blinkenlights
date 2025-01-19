@@ -1,5 +1,6 @@
 import { SvelteMap } from 'svelte/reactivity';
 import { config } from '../config.js';
+import { cleanAndMergeSegments } from './transcription.js';
 
 // System state
 export const systems = $state([]);
@@ -103,44 +104,64 @@ export async function updateCallAudio(audioData) {
                 try {
                     const result = JSON.parse(responseText);
                     
-                    // Create enhanced transcription with metadata
-                    transcription = {
-                        segments: result.segments.map(segment => {
-                            // Find sources active during this segment
+                    // Process segments and create enhanced transcription
+                    const processedSegments = result.segments.map(segment => {
+                            // Find sources and frequency data for this segment
                             const activeSources = metadata.srcList?.filter(src => 
-                                src.pos >= segment.start && src.pos <= segment.end
+                                src.pos >= segment.start && src.pos <= segment.end && src.src !== -1
                             ) || [];
                             
-                            // Find frequency data during this segment
                             const freqData = metadata.freqList?.filter(freq =>
                                 freq.pos >= segment.start && freq.pos <= segment.end
                             ) || [];
 
-                            // Calculate segment quality metrics
+                            // Calculate quality metrics
                             const totalErrors = freqData.reduce((sum, freq) => sum + (freq.error_count || 0), 0);
                             const totalSpikes = freqData.reduce((sum, freq) => sum + (freq.spike_count || 0), 0);
+
+                            // Find primary unit based on transmission duration
+                            const primaryUnit = activeSources.length > 0 ? 
+                                activeSources.reduce((prev, curr) => {
+                                    const prevDuration = metadata.freqList.find(freq => 
+                                        Math.abs(freq.pos - prev.pos) < 0.1
+                                    )?.len || 0;
+                                    const currDuration = metadata.freqList.find(freq => 
+                                        Math.abs(freq.pos - curr.pos) < 0.1
+                                    )?.len || 0;
+                                    return currDuration > prevDuration ? curr : prev;
+                                }).src : null;
                             
                             return {
                                 ...segment,
                                 start_time: new Date((metadata.start_time + segment.start) * 1000).toISOString(),
                                 end_time: new Date((metadata.start_time + segment.end) * 1000).toISOString(),
-                                sources: activeSources.map(src => ({
-                                    id: src.src,
-                                    time: new Date(src.time * 1000).toISOString(),
-                                    emergency: src.emergency === 1
-                                })),
+                                sources: activeSources
+                                    .map(src => ({
+                                        id: src.src,
+                                        time: new Date(src.time * 1000).toISOString(),
+                                        emergency: src.emergency === 1,
+                                        duration: metadata.freqList.find(freq => 
+                                            Math.abs(freq.pos - src.pos) < 0.1
+                                        )?.len || 0
+                                    }))
+                                    .sort((a, b) => new Date(a.time) - new Date(b.time)),
                                 quality_metrics: {
                                     error_count: totalErrors,
                                     spike_count: totalSpikes,
                                     compression_ratio: segment.compression_ratio,
                                     avg_logprob: segment.avg_logprob,
-                                    no_speech_prob: segment.no_speech_prob
+                                    no_speech_prob: segment.no_speech_prob,
+                                    primary_unit: primaryUnit
                                 },
                                 word_count: segment.words.length,
                                 avg_word_confidence: segment.words.reduce((sum, word) => 
                                     sum + word.probability, 0) / segment.words.length
                             };
-                        })
+                        });
+
+                    // Clean up and merge segments
+                    transcription = {
+                        segments: cleanAndMergeSegments(processedSegments)
                     };
                     console.log('Enhanced transcription:', transcription);
                 } catch (parseError) {
@@ -154,7 +175,7 @@ export async function updateCallAudio(audioData) {
         console.log('No WAV data available for transcription');
     }
     
-    // Create the recent call entry with metadata and audio (excluding WAV)
+    // Create the recent call entry with metadata, audio, and original message
     const recentCall = {
         id: callId,
         talkgroup: metadata.talkgroup,
@@ -173,7 +194,8 @@ export async function updateCallAudio(audioData) {
         transcription,
         audio: {
             m4a: audioData.call.audio_m4a_base64
-        }
+        },
+        originalMessage: audioData // Store complete MQTT message
     };
     
     // Add to recent calls

@@ -1,4 +1,6 @@
 <script>
+    import TranscriptionDisplay from '$lib/components/TranscriptionDisplay.svelte';
+    
     /** @type {{ data: { calls: any[], recentCalls: any[] } }} */
     let { data } = $props();
 
@@ -110,60 +112,54 @@
                             {call.sys_name} - {formatFrequency(call.freq)}
                         </div>
                         {#if call.transcription}
-                            <div class="mt-2 space-y-3">
-                                {#each call.transcription.segments as segment}
-                                    <div class="text-sm border-l-2 border-gray-300 dark:border-gray-600 pl-2">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                {new Date(segment.start_time).toLocaleTimeString()}
-                                            </span>
-                                            {#if segment.sources?.length}
-                                                <div class="flex gap-1">
-                                                    {#each segment.sources as source}
-                                                        <span class="px-1.5 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-                                                            Unit {source.id}
-                                                        </span>
-                                                    {/each}
-                                                </div>
-                                            {/if}
-                                            {#if segment.quality_metrics}
-                                                <div class="flex items-center gap-1 ml-auto">
-                                                    {#if segment.quality_metrics.error_count > 0}
-                                                        <span class="px-1.5 py-0.5 text-xs rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">
-                                                            {segment.quality_metrics.error_count} Errors
-                                                        </span>
-                                                    {/if}
-                                                    {#if segment.avg_word_confidence < 0.5}
-                                                        <span class="px-1.5 py-0.5 text-xs rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
-                                                            Low Confidence
-                                                        </span>
-                                                    {/if}
-                                                </div>
-                                            {/if}
-                                        </div>
-                                        <div class="text-gray-700 dark:text-gray-300">
-                                            {#each segment.words as word}
-                                                <span class="relative" 
-                                                      style="opacity: {Math.max(0.5, word.probability)};"
-                                                      title="Confidence: {Math.round(word.probability * 100)}%">
-                                                    {word.word}
-                                                </span>
-                                            {/each}
-                                        </div>
+                            <div class="mt-2">
+                                {#if typeof call.transcription === 'string'}
+                                    <div class="text-sm text-gray-700 dark:text-gray-300 italic border-l-2 border-gray-300 dark:border-gray-600 pl-2">
+                                        {call.transcription}
                                     </div>
-                                {/each}
+                                {:else if call.transcription?.segments}
+                                    <TranscriptionDisplay transcription={call.transcription} />
+                                {/if}
                             </div>
                         {/if}
-                        <button 
-                            class="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
-                            on:click={() => playAudio(call)}
-                        >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Play Audio
-                        </button>
+                        <div class="flex gap-2">
+                            <button 
+                                class="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                                on:click={() => playAudio(call)}
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Play Audio
+                            </button>
+                            <button 
+                                class="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30 rounded hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition-colors"
+                                on:click={async () => {
+                                    try {
+                                        const response = await fetch('/flag-call', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify(call)
+                                        });
+                                        const result = await response.json();
+                                        if (result.success) {
+                                            alert(`Call data saved to ${result.path}`);
+                                        } else {
+                                            throw new Error(result.error);
+                                        }
+                                    } catch (error) {
+                                        console.error('Error flagging call:', error);
+                                        alert('Failed to flag call: ' + error.message);
+                                    }
+                                }}
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                                </svg>
+                                Flag Call
+                            </button>
+                        </div>
                     </div>
                 </div>
             {/each}

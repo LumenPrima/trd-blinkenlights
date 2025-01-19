@@ -1,6 +1,6 @@
 import * as mqtt from 'mqtt';
 import * as state from '$lib/server/state.svelte.js';
-import { invalidate } from '$app/navigation';
+import { config } from '$lib/config.js';
 
 let client;
 let subscribers = new Set();
@@ -13,38 +13,42 @@ let initialized = false;
 
 async function init() {
     // Connect to MQTT broker
-    client = mqtt.connect('mqtt://localhost');
+    client = mqtt.connect(config.mqtt.broker);
 
     client.on('connect', () => {
         // Subscribe to relevant topics
-        client.subscribe('tr-mqtt/main/#');
+        client.subscribe(`${config.mqtt.topicPrefix}/#`);
     });
 
     client.on('message', (topic, message) => {
         const data = JSON.parse(message.toString());
 
         switch (topic) {
-            case 'tr-mqtt/main/recorder':
+            case `${config.mqtt.topicPrefix}/recorder`:
                 // Handle individual recorder update
                 if (data.type === 'recorder' && data.recorder) {
                     state.updateRecorders([data.recorder]);
                     notifySubscribers();
                 }
                 break;
-            case 'tr-mqtt/main/systems':
+            case `${config.mqtt.topicPrefix}/systems`:
                 state.updateSystems(data.systems);
                 notifySubscribers();
                 break;
-            case 'tr-mqtt/main/rates':
+            case `${config.mqtt.topicPrefix}/rates`:
                 state.updateRates(data.rates);
                 notifySubscribers();
                 break;
-            case 'tr-mqtt/main/calls_active':
+            case `${config.mqtt.topicPrefix}/calls_active`:
                 state.updateCalls(data.calls);
                 notifySubscribers();
                 break;
-            case 'tr-mqtt/main/recorders':
+            case `${config.mqtt.topicPrefix}/recorders`:
                 state.updateRecorders(data.recorders);
+                notifySubscribers();
+                break;
+            case `${config.mqtt.topicPrefix}/audio`:
+                state.updateCallAudio(data);
                 notifySubscribers();
                 break;
         }

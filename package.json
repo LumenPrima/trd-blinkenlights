@@ -10,8 +10,10 @@
   "dependencies": {
     "@sveltejs/adapter-node": "^5.2.12",
     "@sveltejs/kit": "^2.16.0",
+    "axios": "^1.7.9",
     "mqtt": "^5.10.3",
     "svelte": "^5.19.0",
+    "undici": "^7.2.3",
     "uplot": "^1.6.31",
     "vite": "^6.0.7"
   },
