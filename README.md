@@ -29,13 +29,19 @@ npm install
 ```
 
 ### Crisper API Service Setup
+
+The transcription service uses [CrisperWhisper](https://github.com/nyrahealth/CrisperWhisper) for speech-to-text functionality.
+
 ```bash
+# Clone the CrisperWhisper repository
+git clone https://github.com/nyrahealth/CrisperWhisper.git
+
 # Create and activate Python virtual environment
+cd CrisperWhisper
 python -m venv venv
 source venv/bin/activate  # On Windows use: venv\Scripts\activate
 
 # Install Python dependencies
-cd CrisperWhisper
 pip install -r requirements.txt
 
 # Start the API service (development)
