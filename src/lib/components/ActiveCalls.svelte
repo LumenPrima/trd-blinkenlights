@@ -110,8 +110,48 @@
                             {call.sys_name} - {formatFrequency(call.freq)}
                         </div>
                         {#if call.transcription}
-                            <div class="mt-2 text-sm text-gray-700 dark:text-gray-300 italic border-l-2 border-gray-300 dark:border-gray-600 pl-2">
-                                {call.transcription}
+                            <div class="mt-2 space-y-3">
+                                {#each call.transcription.segments as segment}
+                                    <div class="text-sm border-l-2 border-gray-300 dark:border-gray-600 pl-2">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                {new Date(segment.start_time).toLocaleTimeString()}
+                                            </span>
+                                            {#if segment.sources?.length}
+                                                <div class="flex gap-1">
+                                                    {#each segment.sources as source}
+                                                        <span class="px-1.5 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                                                            Unit {source.id}
+                                                        </span>
+                                                    {/each}
+                                                </div>
+                                            {/if}
+                                            {#if segment.quality_metrics}
+                                                <div class="flex items-center gap-1 ml-auto">
+                                                    {#if segment.quality_metrics.error_count > 0}
+                                                        <span class="px-1.5 py-0.5 text-xs rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">
+                                                            {segment.quality_metrics.error_count} Errors
+                                                        </span>
+                                                    {/if}
+                                                    {#if segment.avg_word_confidence < 0.5}
+                                                        <span class="px-1.5 py-0.5 text-xs rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                                                            Low Confidence
+                                                        </span>
+                                                    {/if}
+                                                </div>
+                                            {/if}
+                                        </div>
+                                        <div class="text-gray-700 dark:text-gray-300">
+                                            {#each segment.words as word}
+                                                <span class="relative" 
+                                                      style="opacity: {Math.max(0.5, word.probability)};"
+                                                      title="Confidence: {Math.round(word.probability * 100)}%">
+                                                    {word.word}
+                                                </span>
+                                            {/each}
+                                        </div>
+                                    </div>
+                                {/each}
                             </div>
                         {/if}
                         <button 

@@ -1,4 +1,5 @@
 import { SvelteMap } from 'svelte/reactivity';
+import { config } from '../config.js';
 
 // System state
 export const systems = $state([]);
@@ -17,12 +18,7 @@ export const recentCalls = $state(new SvelteMap()); // Calls with audio
 export const recorders = $state(new SvelteMap());
 
 // Keep track of rate history for graphs
-const MAX_HISTORY = 100;
 export const rateHistory = $state(new SvelteMap());
-
-// Constants
-const CALL_CLEANUP_INTERVAL = 30 * 60 * 1000; // 30 minutes in milliseconds
-const MAX_RECENT_CALLS = 100; // Maximum number of recent calls to keep
 
 // Update functions
 export function updateRates(data) {
@@ -42,7 +38,7 @@ export function updateRates(data) {
         });
         
         // Maintain fixed size
-        if (history.length > MAX_HISTORY) {
+        if (history.length > config.system.maxRateHistory) {
             history.shift();
         }
         
@@ -89,10 +85,12 @@ export async function updateCallAudio(audioData) {
             // Create form data
             const formData = new FormData();
             formData.append('file', wavBlob, 'audio.wav');
-            formData.append('model', 'Systran/faster-whisper-base.en');
+            formData.append('model', config.whisper.model);
+            formData.append('response_format', 'verbose_json');
+            formData.append('timestamp_granularities[]', 'word');
             
             console.log('Transcribing audio...');
-            const response = await fetch('http://localhost:8000/v1/audio/transcriptions', {
+            const response = await fetch(config.whisper.apiUrl, {
                 method: 'POST',
                 body: formData
             });
@@ -104,8 +102,47 @@ export async function updateCallAudio(audioData) {
             if (response.ok) {
                 try {
                     const result = JSON.parse(responseText);
-                    transcription = result.text;
-                    console.log('Transcription result:', transcription);
+                    
+                    // Create enhanced transcription with metadata
+                    transcription = {
+                        segments: result.segments.map(segment => {
+                            // Find sources active during this segment
+                            const activeSources = metadata.srcList?.filter(src => 
+                                src.pos >= segment.start && src.pos <= segment.end
+                            ) || [];
+                            
+                            // Find frequency data during this segment
+                            const freqData = metadata.freqList?.filter(freq =>
+                                freq.pos >= segment.start && freq.pos <= segment.end
+                            ) || [];
+
+                            // Calculate segment quality metrics
+                            const totalErrors = freqData.reduce((sum, freq) => sum + (freq.error_count || 0), 0);
+                            const totalSpikes = freqData.reduce((sum, freq) => sum + (freq.spike_count || 0), 0);
+                            
+                            return {
+                                ...segment,
+                                start_time: new Date((metadata.start_time + segment.start) * 1000).toISOString(),
+                                end_time: new Date((metadata.start_time + segment.end) * 1000).toISOString(),
+                                sources: activeSources.map(src => ({
+                                    id: src.src,
+                                    time: new Date(src.time * 1000).toISOString(),
+                                    emergency: src.emergency === 1
+                                })),
+                                quality_metrics: {
+                                    error_count: totalErrors,
+                                    spike_count: totalSpikes,
+                                    compression_ratio: segment.compression_ratio,
+                                    avg_logprob: segment.avg_logprob,
+                                    no_speech_prob: segment.no_speech_prob
+                                },
+                                word_count: segment.words.length,
+                                avg_word_confidence: segment.words.reduce((sum, word) => 
+                                    sum + word.probability, 0) / segment.words.length
+                            };
+                        })
+                    };
+                    console.log('Enhanced transcription:', transcription);
                 } catch (parseError) {
                     console.error('Failed to parse JSON response:', parseError);
                 }
@@ -154,7 +191,7 @@ export async function updateCallAudio(audioData) {
     // Keep only the newest MAX_RECENT_CALLS that aren't too old
     recentCalls.clear();
     callsArray.forEach(([id, call], index) => {
-        if (index < MAX_RECENT_CALLS && (now - call.finishedAt) <= CALL_CLEANUP_INTERVAL) {
+        if (index < config.system.maxRecentCalls && (now - call.finishedAt) <= config.system.callCleanupInterval) {
             recentCalls.set(id, call);
         }
     });
