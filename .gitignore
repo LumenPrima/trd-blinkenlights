@@ -30,3 +30,7 @@ pnpm-debug.log*
 
 # Flagged calls
 /flagged-calls
+
+# Configuration files
+/openapi.json
+/scratch.json
