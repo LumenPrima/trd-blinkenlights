@@ -27,3 +27,23 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Flagged calls
+/flagged-calls
+
+# Configuration files
+/openapi.json
+/scratch.json
+
+# Python related
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env/
+.venv/
+ENV/
+
+# Project specific
+/CrisperWhisper/
+/crisper-model/
