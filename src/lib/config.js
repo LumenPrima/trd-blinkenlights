@@ -7,7 +7,7 @@ export const config = {
     whisper: {
         // Whisper API configuration
         apiUrl: process.env.WHISPER_API_URL || 'http://localhost:8000/v1/audio/transcriptions',
-        model: process.env.WHISPER_MODEL || 'Systran/faster-whisper-base.en',
+        model: process.env.WHISPER_MODEL || 'Systran/faster-distil-whisper-large-v3',
     },
     system: {
         // System-wide constants

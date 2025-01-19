@@ -58,6 +58,9 @@
                         {call.call_state_type}
                     </span>
                 </div>
+                <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                    {call.sys_name}
+                </div>
                 <div class="border-b border-gray-100/50 dark:border-gray-700/30 mb-2"></div>
                     {#if call.talkgroup_description}
                         <div class="text-sm text-gray-700 dark:text-gray-300 mb-2 truncate">
@@ -76,9 +79,6 @@
                         {/if}
                         <div class="text-xs text-gray-500 dark:text-gray-400">
                             Started {new Date(call.start_time * 1000).toLocaleTimeString()} · {formatDuration(call.elapsed)}
-                        </div>
-                        <div class="pt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {call.sys_name} - {formatFrequency(call.freq)}
                         </div>
                     </div>
             </div>
@@ -105,11 +105,8 @@
                         <div class="text-xs text-gray-500 dark:text-gray-400">
                             Started {new Date(call.start_time * 1000).toLocaleTimeString()} · {formatDuration(call.elapsed)}
                         </div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">
-                            Ended {new Date(call.finishedAt).toLocaleTimeString()}
-                        </div>
-                        <div class="pt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {call.sys_name} - {formatFrequency(call.freq)}
+                        <div class="text-xs text-gray-600 dark:text-gray-400">
+                            {call.sys_name}
                         </div>
                         {#if call.transcription}
                             <div class="mt-2">

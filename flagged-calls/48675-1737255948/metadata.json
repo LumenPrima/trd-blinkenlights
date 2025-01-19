@@ -1,0 +1,15 @@
+{
+  "talkgroup": 48675,
+  "talkgroup_tag": "83 FD ALERT",
+  "talkgroup_description": "County Fire Alert",
+  "talkgroup_group": "Warren County (83) Fire/EMS/Hospital",
+  "talkgroup_group_tag": "Fire Dispatch",
+  "start_time": 1737255948,
+  "stop_time": 1737255974,
+  "elapsed": 26,
+  "emergency": false,
+  "encrypted": false,
+  "freq": 856762500,
+  "sys_name": "warco",
+  "finishedAt": 1737255984515
+}

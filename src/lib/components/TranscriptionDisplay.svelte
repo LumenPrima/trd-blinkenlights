@@ -14,11 +14,11 @@
     });
 </script>
 
-<div class="space-y-3">
+<div class="space-y-1.5">
     {#each segments as segment}
-        <div class="flex gap-1 items-start">
+        <div class="flex gap-1 items-baseline">
             <!-- Icons -->
-            <div class="w-4 flex justify-end pt-0.5">
+            <div class="w-4 flex justify-end">
                 {#if segment.hasError}
                     <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -33,9 +33,9 @@
             <div class="flex-1 min-w-0">
                 <!-- Unit ID -->
                 {#if segment.showUnit && segment.sources?.length}
-                    <div class="flex gap-1 mb-1">
+                    <div class="flex gap-1 mb-0.5">
                         {#each segment.sources as source}
-                            <span class="px-1 py-0.5 text-xs font-mono bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400">
+                            <span class="px-1 py-px text-xs font-mono bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400">
                                 {source.id}
                             </span>
                         {/each}
@@ -43,7 +43,7 @@
                 {/if}
 
                 <!-- Message -->
-                <div class="text-sm text-gray-900 dark:text-gray-100">
+                <div class="text-sm leading-tight text-gray-900 dark:text-gray-100">
                     {segment.words.map(w => w.word).join(' ')}
                 </div>
             </div>

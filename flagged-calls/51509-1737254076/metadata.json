@@ -1,0 +1,15 @@
+{
+  "talkgroup": 51509,
+  "talkgroup_tag": "HAMILTON",
+  "talkgroup_description": "Post 9 (Hamilton) Dispatch",
+  "talkgroup_group": "OSP District 8",
+  "talkgroup_group_tag": "Law Dispatch",
+  "start_time": 1737254076,
+  "stop_time": 1737254079,
+  "elapsed": 2,
+  "emergency": false,
+  "encrypted": false,
+  "freq": 851762500,
+  "sys_name": "butco",
+  "finishedAt": 1737254093293
+}

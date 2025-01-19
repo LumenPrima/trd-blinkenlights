@@ -1,0 +1,256 @@
+{
+  "segments": [
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 0,
+      "end": 0.56,
+      "text": " Right.",
+      "tokens": [
+        50363,
+        6498,
+        13,
+        50413
+      ],
+      "temperature": 0,
+      "avg_logprob": -0.6153273582458496,
+      "compression_ratio": 0.8048780487804879,
+      "no_speech_prob": 0.0828857421875,
+      "words": [
+        {
+          "start": 0,
+          "end": 0.56,
+          "word": "Right.",
+          "probability": 0.412841796875,
+          "lowConfidence": true
+        }
+      ],
+      "start_time": "2025-01-19T02:34:36.000Z",
+      "end_time": "2025-01-19T02:34:36.560Z",
+      "sources": [
+        {
+          "id": 9004188,
+          "time": "2025-01-19T02:34:36.000Z",
+          "emergency": false,
+          "duration": 1.62
+        }
+      ],
+      "quality_metrics": {
+        "error_count": 153,
+        "spike_count": 3,
+        "compression_ratio": 0.8048780487804879,
+        "avg_logprob": -0.6153273582458496,
+        "no_speech_prob": 0.0828857421875,
+        "primary_unit": 9004188
+      },
+      "word_count": 1,
+      "avg_word_confidence": 0.412841796875
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 0.68,
+      "end": 1.14,
+      "text": " He's about here.",
+      "tokens": [
+        50413,
+        679,
+        338,
+        546,
+        994,
+        13,
+        50463
+      ],
+      "temperature": 0,
+      "avg_logprob": -0.6153273582458496,
+      "compression_ratio": 0.8048780487804879,
+      "no_speech_prob": 0.0828857421875,
+      "words": [
+        {
+          "start": 0.68,
+          "end": 0.84,
+          "word": "He's",
+          "probability": 0.29400634765625,
+          "lowConfidence": true
+        },
+        {
+          "start": 0.84,
+          "end": 0.98,
+          "word": "about",
+          "probability": 0.85205078125
+        },
+        {
+          "start": 0.98,
+          "end": 1.14,
+          "word": "here.",
+          "probability": 0.71044921875
+        }
+      ],
+      "start_time": "2025-01-19T02:34:36.680Z",
+      "end_time": "2025-01-19T02:34:37.140Z",
+      "sources": [
+        {
+          "id": 9004188,
+          "time": "2025-01-19T02:34:36.680Z",
+          "emergency": false,
+          "duration": 0.45999999999999985
+        }
+      ],
+      "quality_metrics": {
+        "error_count": 0,
+        "spike_count": 0,
+        "compression_ratio": 0.8048780487804879,
+        "avg_logprob": -0.6153273582458496,
+        "no_speech_prob": 0.0828857421875,
+        "primary_unit": 9004188
+      },
+      "word_count": 3,
+      "avg_word_confidence": 0.61883544921875
+    },
+    {
+      "id": 3,
+      "seek": 0,
+      "start": 1.24,
+      "end": 1.3,
+      "text": " 11.",
+      "tokens": [
+        50463,
+        1367,
+        13,
+        50513
+      ],
+      "temperature": 0,
+      "avg_logprob": -0.6153273582458496,
+      "compression_ratio": 0.8048780487804879,
+      "no_speech_prob": 0.0828857421875,
+      "words": [
+        {
+          "start": 1.24,
+          "end": 1.3,
+          "word": "11.",
+          "probability": 0.07867431640625,
+          "lowConfidence": true
+        }
+      ],
+      "start_time": "2025-01-19T02:34:37.240Z",
+      "end_time": "2025-01-19T02:34:37.300Z",
+      "sources": [
+        {
+          "id": 9004188,
+          "time": "2025-01-19T02:34:37.240Z",
+          "emergency": false,
+          "duration": 0.06000000000000005
+        }
+      ],
+      "quality_metrics": {
+        "error_count": 0,
+        "spike_count": 0,
+        "compression_ratio": 0.8048780487804879,
+        "avg_logprob": -0.6153273582458496,
+        "no_speech_prob": 0.0828857421875,
+        "primary_unit": 9004188
+      },
+      "word_count": 1,
+      "avg_word_confidence": 0.07867431640625
+    },
+    {
+      "id": 4,
+      "seek": 0,
+      "start": 1.66,
+      "end": 1.94,
+      "text": "Okay.",
+      "tokens": [
+        50513,
+        16805,
+        13,
+        50563
+      ],
+      "temperature": 0,
+      "avg_logprob": -0.6153273582458496,
+      "compression_ratio": 0.8048780487804879,
+      "no_speech_prob": 0.0828857421875,
+      "words": [
+        {
+          "start": 1.66,
+          "end": 1.9,
+          "word": "Okay.",
+          "probability": 0.336181640625,
+          "lowConfidence": true
+        },
+        {
+          "start": 1.9,
+          "end": 1.94,
+          "word": "Okay.",
+          "probability": 0.0158843994140625,
+          "lowConfidence": true
+        }
+      ],
+      "start_time": "2025-01-19T02:34:37.660Z",
+      "end_time": "2025-01-19T02:34:37.940Z",
+      "sources": [
+        {
+          "id": 9004188,
+          "time": "2025-01-19T02:34:37.660Z",
+          "emergency": false,
+          "duration": 0.24
+        }
+      ],
+      "quality_metrics": {
+        "error_count": 0,
+        "spike_count": 0,
+        "avg_logprob": -0.4606201788958381,
+        "compression_ratio": 4.784791965566715,
+        "no_speech_prob": 0.89453125,
+        "primary_unit": 9004188
+      },
+      "word_count": 2,
+      "avg_word_confidence": 0.336181640625
+    },
+    {
+      "id": 6,
+      "seek": 190,
+      "start": 2.02,
+      "end": 2.14,
+      "text": " Okay.",
+      "tokens": [
+        50463,
+        16805,
+        13,
+        50513
+      ],
+      "temperature": 0,
+      "avg_logprob": -0.3059129995458266,
+      "compression_ratio": 8.764705882352942,
+      "no_speech_prob": 0.89453125,
+      "words": [
+        {
+          "start": 2.02,
+          "end": 2.14,
+          "word": "Okay.",
+          "probability": 0.09490966796875,
+          "lowConfidence": true
+        }
+      ],
+      "start_time": "2025-01-19T02:34:38.020Z",
+      "end_time": "2025-01-19T02:34:38.140Z",
+      "sources": [
+        {
+          "id": 9004188,
+          "time": "2025-01-19T02:34:38.020Z",
+          "emergency": false,
+          "duration": 0.1200000000000001
+        }
+      ],
+      "quality_metrics": {
+        "error_count": 0,
+        "spike_count": 0,
+        "compression_ratio": 8.764705882352942,
+        "avg_logprob": -0.3059129995458266,
+        "no_speech_prob": 0.89453125,
+        "primary_unit": 9004188
+      },
+      "word_count": 1,
+      "avg_word_confidence": 0.09490966796875
+    }
+  ]
+}
