@@ -83,15 +83,13 @@ async function transcribeAudio(audioData, metadata, callId) {
         formData.append('response_format', 'verbose_json');
         formData.append('timestamp_granularities[]', 'word');
         
-        console.log('Transcribing...');
-        const response = await fetch(config.whisper.apiUrl, {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (response.ok) {
-            const result = JSON.parse(await response.text());
-            console.log('Transcription complete');
+            const response = await fetch(config.whisper.apiUrl, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const result = JSON.parse(await response.text());
             
             // Process segments and create enhanced transcription
             const processedSegments = result.segments.map(segment => {
@@ -155,7 +153,7 @@ async function transcribeAudio(audioData, metadata, callId) {
             }
         }
     } catch (error) {
-        console.error('Transcription processing failed:', error);
+            console.error('Transcription failed');
     }
 }
 
@@ -192,9 +190,10 @@ export async function updateCallAudio(audioData) {
 
     // Attempt transcription in the background if WAV data is available
     if (audioData.call.audio_wav_base64 && config.whisper?.apiUrl) {
-        transcribeAudio(audioData, metadata, callId).catch(error => {
-            console.error('Transcription failed:', error);
-        });
+        console.log('Transcribing...');
+        transcribeAudio(audioData, metadata, callId)
+            .then(() => console.log('Transcription complete'))
+            .catch(() => console.log('Transcription failed'));
     }
     
     // Clean up old recent calls
