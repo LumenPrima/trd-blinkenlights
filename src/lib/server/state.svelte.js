@@ -193,7 +193,10 @@ export async function updateCallAudio(audioData) {
         finishedAt: Date.now(),
         transcription,
         audio: {
-            m4a: audioData.call.audio_m4a_base64
+            m4a: audioData.call.audio_m4a_base64 ? 
+                // Ensure the base64 string is properly formatted
+                audioData.call.audio_m4a_base64.replace(/^data:audio\/mp4;base64,/, '').trim() : 
+                null
         },
         originalMessage: audioData // Store complete MQTT message
     };

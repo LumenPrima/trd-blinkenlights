@@ -5,19 +5,76 @@
     let { data } = $props();
 
     function playAudio(call) {
-        if (!call.audio?.m4a) return;
+        if (!call.audio?.m4a) {
+            alert('No audio available for this call');
+            return;
+        }
 
-        // Create audio element and play
-        const audioBlob = new Blob(
-            [Uint8Array.from(atob(call.audio.m4a), c => c.charCodeAt(0))], 
-            { type: 'audio/mp4' }
-        );
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audioElement = new Audio(audioUrl);
-        audioElement.play();
+        try {
+            // Validate base64 string
+            const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+            const base64Data = call.audio.m4a.trim();
+            
+            if (!base64Regex.test(base64Data)) {
+                throw new Error('Invalid audio data format');
+            }
 
-        // Clean up URL when done
-        audioElement.onended = () => URL.revokeObjectURL(audioUrl);
+            // Decode base64 string properly with error handling
+            let binaryString;
+            try {
+                binaryString = atob(base64Data);
+            } catch (e) {
+                throw new Error('Failed to decode audio data');
+            }
+
+            // Convert to Uint8Array
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            // Validate minimum audio size
+            if (bytes.length < 100) {
+                throw new Error('Audio data is too small to be valid');
+            }
+
+            // Create blob and audio element
+            const audioBlob = new Blob([bytes], { type: 'audio/mp4; codecs="mp4a.40.2"' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audioElement = new Audio();
+
+            // Set up event handlers before setting src
+            audioElement.onerror = (e) => {
+                console.error('Audio playback error:', e);
+                alert('Failed to play audio: ' + (e.target.error?.message || 'Unknown error'));
+                URL.revokeObjectURL(audioUrl);
+            };
+
+            audioElement.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+            };
+
+            // Set source and load
+            audioElement.src = audioUrl;
+            audioElement.load();
+
+            // Start playback with timeout
+            const playPromise = audioElement.play();
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Playback timeout')), 5000);
+            });
+
+            Promise.race([playPromise, timeoutPromise])
+                .catch(error => {
+                    console.error('Audio play failed:', error);
+                    alert('Failed to start audio playback: ' + error.message);
+                    URL.revokeObjectURL(audioUrl);
+                });
+
+        } catch (error) {
+            console.error('Error processing audio data:', error);
+            alert('Failed to process audio data: ' + error.message);
+        }
     }
 
     function formatFrequency(freq) {
