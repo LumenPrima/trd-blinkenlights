@@ -5,19 +5,62 @@
     let { data } = $props();
 
     function playAudio(call) {
-        if (!call.audio?.m4a) return;
+        if (!call.audio?.m4a) {
+            alert('No audio available for this call');
+            return;
+        }
 
-        // Create audio element and play
-        const audioBlob = new Blob(
-            [Uint8Array.from(atob(call.audio.m4a), c => c.charCodeAt(0))], 
-            { type: 'audio/mp4' }
-        );
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audioElement = new Audio(audioUrl);
-        audioElement.play();
+        try {
+            // Handle both raw base64 and data URI formats
+            const base64Data = call.audio.m4a.replace(/^data:audio\/mp4;base64,/, '');
+            
+            // Decode base64 string with error handling
+            let binaryString;
+            try {
+                binaryString = atob(base64Data);
+            } catch (e) {
+                console.error('Base64 decode error:', e);
+                alert('Failed to decode audio data');
+                return;
+            }
 
-        // Clean up URL when done
-        audioElement.onended = () => URL.revokeObjectURL(audioUrl);
+            // Convert to Uint8Array
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            // Create blob and audio element
+            const audioBlob = new Blob([bytes], { type: 'audio/mp4; codecs="mp4a.40.2"' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audioElement = new Audio();
+
+            // Set up event handlers
+            audioElement.onerror = (e) => {
+                console.error('Audio playback error:', e);
+                alert('Failed to play audio');
+                URL.revokeObjectURL(audioUrl);
+            };
+
+            audioElement.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+            };
+
+            // Set source and load
+            audioElement.src = audioUrl;
+            audioElement.load();
+
+            // Start playback
+            audioElement.play().catch(error => {
+                console.error('Audio play failed:', error);
+                alert('Failed to start audio playback');
+                URL.revokeObjectURL(audioUrl);
+            });
+
+        } catch (error) {
+            console.error('Error processing audio:', error);
+            alert('Failed to process audio');
+        }
     }
 
     function formatFrequency(freq) {
