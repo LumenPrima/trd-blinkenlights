@@ -85,10 +85,12 @@ export async function handle({ event, resolve }) {
                 };
                 
                 subscribers.add(subscriber);
+                console.log(`Client connected. Total clients: ${subscribers.size}`);
 
                 // Clean up on connection close
                 event.platform?.on('close', () => {
                     subscribers.delete(subscriber);
+                    console.log(`Client disconnected. Total clients: ${subscribers.size}`);
                     try {
                         controller.close();
                     } catch (error) {
