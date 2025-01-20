@@ -151,8 +151,8 @@
                         <div class="text-xs text-gray-600 dark:text-gray-400">
                             {call.sys_name}
                         </div>
-                        {#if call.transcription}
-                            <div class="mt-2">
+                        <div class="mt-2">
+                            {#if call.transcription}
                                 {#if typeof call.transcription === 'string'}
                                     <div class="text-sm text-gray-700 dark:text-gray-300 italic border-l-2 border-gray-300 dark:border-gray-600 pl-2">
                                         {call.transcription}
@@ -160,8 +160,12 @@
                                 {:else if call.transcription?.segments}
                                     <TranscriptionDisplay transcription={call.transcription} />
                                 {/if}
-                            </div>
-                        {/if}
+                            {:else if call.originalMessage?.call?.audio_wav_base64}
+                                <div class="text-xs text-gray-500 dark:text-gray-400 italic">
+                                    Transcription in progress...
+                                </div>
+                            {/if}
+                        </div>
                         <div class="flex gap-2">
                             <button 
                                 class="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
