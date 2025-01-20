@@ -4,12 +4,83 @@ import { config } from '$lib/config.js';
 
 let client;
 let subscribers = new Set();
+let updateQueue = new Set();
+let updateTimeout = null;
 
+// Batch updates and notify subscribers with debouncing
 function notifySubscribers() {
-    subscribers.forEach(subscriber => subscriber());
+    if (updateTimeout) return;
+    
+    updateTimeout = setTimeout(() => {
+        if (updateQueue.size > 0) {
+            subscribers.forEach(subscriber => {
+                try {
+                    subscriber(Array.from(updateQueue));
+                } catch (error) {
+                    console.error('Subscriber notification failed:', error);
+                }
+            });
+            updateQueue.clear();
+        }
+        updateTimeout = null;
+    }, 100); // Debounce updates by 100ms
+}
+
+// Memory-efficient update tracking
+function queueUpdate(type) {
+    updateQueue.add(type);
+    notifySubscribers();
 }
 
 let initialized = false;
+let messageQueue = [];
+let processingQueue = false;
+
+// Process MQTT messages in batches
+async function processMessageQueue() {
+    if (processingQueue || messageQueue.length === 0) return;
+    
+    processingQueue = true;
+    const batch = messageQueue.splice(0, 50); // Process up to 50 messages at once
+    
+    try {
+        for (const { topic, data } of batch) {
+            switch (topic) {
+                case `${config.mqtt.topicPrefix}/recorder`:
+                    if (data.type === 'recorder' && data.recorder) {
+                        state.updateRecorders([data.recorder]);
+                        queueUpdate('recorders');
+                    }
+                    break;
+                case `${config.mqtt.topicPrefix}/systems`:
+                    state.updateSystems(data.systems);
+                    queueUpdate('systems');
+                    break;
+                case `${config.mqtt.topicPrefix}/rates`:
+                    state.updateRates(data.rates);
+                    queueUpdate('rates');
+                    break;
+                case `${config.mqtt.topicPrefix}/calls_active`:
+                    state.updateCalls(data.calls);
+                    queueUpdate('calls');
+                    break;
+                case `${config.mqtt.topicPrefix}/recorders`:
+                    state.updateRecorders(data.recorders);
+                    queueUpdate('recorders');
+                    break;
+                case `${config.mqtt.topicPrefix}/audio`:
+                    state.updateCallAudio(data);
+                    queueUpdate('audio');
+                    break;
+            }
+        }
+    } finally {
+        processingQueue = false;
+        if (messageQueue.length > 0) {
+            setTimeout(processMessageQueue, 0);
+        }
+    }
+}
 
 async function init() {
     // Connect to MQTT broker
@@ -21,36 +92,12 @@ async function init() {
     });
 
     client.on('message', (topic, message) => {
-        const data = JSON.parse(message.toString());
-
-        switch (topic) {
-            case `${config.mqtt.topicPrefix}/recorder`:
-                // Handle individual recorder update
-                if (data.type === 'recorder' && data.recorder) {
-                    state.updateRecorders([data.recorder]);
-                    notifySubscribers();
-                }
-                break;
-            case `${config.mqtt.topicPrefix}/systems`:
-                state.updateSystems(data.systems);
-                notifySubscribers();
-                break;
-            case `${config.mqtt.topicPrefix}/rates`:
-                state.updateRates(data.rates);
-                notifySubscribers();
-                break;
-            case `${config.mqtt.topicPrefix}/calls_active`:
-                state.updateCalls(data.calls);
-                notifySubscribers();
-                break;
-            case `${config.mqtt.topicPrefix}/recorders`:
-                state.updateRecorders(data.recorders);
-                notifySubscribers();
-                break;
-            case `${config.mqtt.topicPrefix}/audio`:
-                state.updateCallAudio(data);
-                notifySubscribers();
-                break;
+        try {
+            const data = JSON.parse(message.toString());
+            messageQueue.push({ topic, data });
+            processMessageQueue();
+        } catch (error) {
+            console.error('Error processing MQTT message:', error);
         }
     });
 }
@@ -62,15 +109,15 @@ export async function handle({ event, resolve }) {
         initialized = true;
     }
 
-    // Handle SSE endpoint
+    // Handle SSE endpoint with efficient updates
     if (event.url.pathname === '/api/sse') {
         const stream = new ReadableStream({
             start(controller) {
-                const subscriber = () => {
+                const subscriber = (updates) => {
                     try {
-                        controller.enqueue('data: update\n\n');
+                        // Send specific update types to reduce payload size
+                        controller.enqueue(`data: ${JSON.stringify(updates)}\n\n`);
                     } catch (error) {
-                        // If controller is closed, remove the subscriber
                         subscribers.delete(subscriber);
                     }
                 };
@@ -88,7 +135,6 @@ export async function handle({ event, resolve }) {
                 });
             },
             cancel() {
-                // Clean up any resources when the stream is cancelled
                 subscribers.clear();
             }
         });
