@@ -69,113 +69,101 @@ export function updateCalls(callsData) {
     });
 }
 
+// Background transcription function
+async function transcribeAudio(audioData, metadata, callId) {
+    try {
+        // Convert base64 to binary
+        const binaryData = Uint8Array.from(atob(audioData.call.audio_wav_base64), c => c.charCodeAt(0));
+        const wavBlob = new Blob([binaryData], { type: 'audio/wav' });
+
+        // Create form data
+        const formData = new FormData();
+        formData.append('file', wavBlob, 'audio.wav');
+        formData.append('model', config.whisper.model);
+        formData.append('response_format', 'verbose_json');
+        formData.append('timestamp_granularities[]', 'word');
+        
+        const response = await fetch(config.whisper.apiUrl, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const result = JSON.parse(await response.text());
+            
+            // Process segments and create enhanced transcription
+            const processedSegments = result.segments.map(segment => {
+                const activeSources = metadata.srcList?.filter(src => 
+                    src.pos >= segment.start && src.pos <= segment.end && src.src !== -1
+                ) || [];
+                
+                const freqData = metadata.freqList?.filter(freq =>
+                    freq.pos >= segment.start && freq.pos <= segment.end
+                ) || [];
+
+                const totalErrors = freqData.reduce((sum, freq) => sum + (freq.error_count || 0), 0);
+                const totalSpikes = freqData.reduce((sum, freq) => sum + (freq.spike_count || 0), 0);
+
+                const primaryUnit = activeSources.length > 0 ? 
+                    activeSources.reduce((prev, curr) => {
+                        const prevDuration = metadata.freqList.find(freq => 
+                            Math.abs(freq.pos - prev.pos) < 0.1
+                        )?.len || 0;
+                        const currDuration = metadata.freqList.find(freq => 
+                            Math.abs(freq.pos - curr.pos) < 0.1
+                        )?.len || 0;
+                        return currDuration > prevDuration ? curr : prev;
+                    }).src : null;
+                
+                return {
+                    ...segment,
+                    start_time: new Date((metadata.start_time + segment.start) * 1000).toISOString(),
+                    end_time: new Date((metadata.start_time + segment.end) * 1000).toISOString(),
+                    sources: activeSources
+                        .map(src => ({
+                            id: src.src,
+                            time: new Date(src.time * 1000).toISOString(),
+                            emergency: src.emergency === 1,
+                            duration: metadata.freqList.find(freq => 
+                                Math.abs(freq.pos - src.pos) < 0.1
+                            )?.len || 0
+                        }))
+                        .sort((a, b) => new Date(a.time) - new Date(b.time)),
+                    quality_metrics: {
+                        error_count: totalErrors,
+                        spike_count: totalSpikes,
+                        compression_ratio: segment.compression_ratio,
+                        avg_logprob: segment.avg_logprob,
+                        no_speech_prob: segment.no_speech_prob,
+                        primary_unit: primaryUnit
+                    },
+                    word_count: segment.words.length,
+                    avg_word_confidence: segment.words.reduce((sum, word) => 
+                        sum + word.probability, 0) / segment.words.length
+                };
+            });
+
+            // Update the call with transcription
+            const existingCall = recentCalls.get(callId);
+            if (existingCall) {
+                existingCall.transcription = {
+                    segments: cleanAndMergeSegments(processedSegments)
+                };
+                recentCalls.set(callId, existingCall);
+            }
+        }
+    } catch (error) {
+        console.error('Transcription processing failed:', error);
+    }
+}
+
 export async function updateCallAudio(audioData) {
     if (!audioData?.call?.metadata) return;
     
     const metadata = audioData.call.metadata;
     const callId = `${metadata.talkgroup}-${metadata.start_time}`;
     
-    // Send WAV to transcription API
-    let transcription = null;
-    if (audioData.call.audio_wav_base64) {
-        try {
-            // Convert base64 to binary
-            const binaryData = Uint8Array.from(atob(audioData.call.audio_wav_base64), c => c.charCodeAt(0));
-            const wavBlob = new Blob([binaryData], { type: 'audio/wav' });
-
-            // Create form data
-            const formData = new FormData();
-            formData.append('file', wavBlob, 'audio.wav');
-            formData.append('model', config.whisper.model);
-            formData.append('response_format', 'verbose_json');
-            formData.append('timestamp_granularities[]', 'word');
-            
-            console.log('Transcribing audio...');
-            const response = await fetch(config.whisper.apiUrl, {
-                method: 'POST',
-                body: formData
-            });
-            
-            console.log('Transcription response status:', response.status);
-            const responseText = await response.text();
-            console.log('Raw response:', responseText);
-            
-            if (response.ok) {
-                try {
-                    const result = JSON.parse(responseText);
-                    
-                    // Process segments and create enhanced transcription
-                    const processedSegments = result.segments.map(segment => {
-                            // Find sources and frequency data for this segment
-                            const activeSources = metadata.srcList?.filter(src => 
-                                src.pos >= segment.start && src.pos <= segment.end && src.src !== -1
-                            ) || [];
-                            
-                            const freqData = metadata.freqList?.filter(freq =>
-                                freq.pos >= segment.start && freq.pos <= segment.end
-                            ) || [];
-
-                            // Calculate quality metrics
-                            const totalErrors = freqData.reduce((sum, freq) => sum + (freq.error_count || 0), 0);
-                            const totalSpikes = freqData.reduce((sum, freq) => sum + (freq.spike_count || 0), 0);
-
-                            // Find primary unit based on transmission duration
-                            const primaryUnit = activeSources.length > 0 ? 
-                                activeSources.reduce((prev, curr) => {
-                                    const prevDuration = metadata.freqList.find(freq => 
-                                        Math.abs(freq.pos - prev.pos) < 0.1
-                                    )?.len || 0;
-                                    const currDuration = metadata.freqList.find(freq => 
-                                        Math.abs(freq.pos - curr.pos) < 0.1
-                                    )?.len || 0;
-                                    return currDuration > prevDuration ? curr : prev;
-                                }).src : null;
-                            
-                            return {
-                                ...segment,
-                                start_time: new Date((metadata.start_time + segment.start) * 1000).toISOString(),
-                                end_time: new Date((metadata.start_time + segment.end) * 1000).toISOString(),
-                                sources: activeSources
-                                    .map(src => ({
-                                        id: src.src,
-                                        time: new Date(src.time * 1000).toISOString(),
-                                        emergency: src.emergency === 1,
-                                        duration: metadata.freqList.find(freq => 
-                                            Math.abs(freq.pos - src.pos) < 0.1
-                                        )?.len || 0
-                                    }))
-                                    .sort((a, b) => new Date(a.time) - new Date(b.time)),
-                                quality_metrics: {
-                                    error_count: totalErrors,
-                                    spike_count: totalSpikes,
-                                    compression_ratio: segment.compression_ratio,
-                                    avg_logprob: segment.avg_logprob,
-                                    no_speech_prob: segment.no_speech_prob,
-                                    primary_unit: primaryUnit
-                                },
-                                word_count: segment.words.length,
-                                avg_word_confidence: segment.words.reduce((sum, word) => 
-                                    sum + word.probability, 0) / segment.words.length
-                            };
-                        });
-
-                    // Clean up and merge segments
-                    transcription = {
-                        segments: cleanAndMergeSegments(processedSegments)
-                    };
-                    console.log('Enhanced transcription:', transcription);
-                } catch (parseError) {
-                    console.error('Failed to parse JSON response:', parseError);
-                }
-            }
-        } catch (error) {
-            console.error('Transcription failed:', error);
-        }
-    } else {
-        console.log('No WAV data available for transcription');
-    }
-    
-    // Create the recent call entry with metadata, audio, and original message
+    // Create and store the call immediately
     const recentCall = {
         id: callId,
         talkgroup: metadata.talkgroup,
@@ -191,26 +179,28 @@ export async function updateCallAudio(audioData) {
         freq: metadata.freq,
         sys_name: metadata.short_name,
         finishedAt: Date.now(),
-        transcription,
         audio: {
             m4a: audioData.call.audio_m4a_base64
         },
-        originalMessage: audioData // Store complete MQTT message
+        originalMessage: audioData
     };
     
-    // Add to recent calls
+    // Add to recent calls immediately
     recentCalls.set(callId, recentCall);
+
+    // Attempt transcription in the background if WAV data is available
+    if (audioData.call.audio_wav_base64 && config.whisper?.apiUrl) {
+        console.log('Starting background transcription...');
+        transcribeAudio(audioData, metadata, callId).catch(error => {
+            console.error('Background transcription failed:', error);
+        });
+    }
     
     // Clean up old recent calls
     const now = Date.now();
-    
-    // Convert to array for sorting
     const callsArray = Array.from(recentCalls.entries());
-    
-    // Sort by finishedAt timestamp, newest first
     callsArray.sort(([, a], [, b]) => b.finishedAt - a.finishedAt);
     
-    // Keep only the newest MAX_RECENT_CALLS that aren't too old
     recentCalls.clear();
     callsArray.forEach(([id, call], index) => {
         if (index < config.system.maxRecentCalls && (now - call.finishedAt) <= config.system.callCleanupInterval) {
