@@ -93,9 +93,19 @@ async function transcribeAudio(audioData, metadata, callId) {
             
             // Process segments and create enhanced transcription
             const processedSegments = result.segments.map(segment => {
-                const activeSources = metadata.srcList?.filter(src => 
-                    src.pos >= segment.start && src.pos <= segment.end && src.src !== -1
-                ) || [];
+                // Find the source active during this segment's time
+                const segmentStartPos = segment.start;
+                const segmentEndPos = segment.end;
+                
+                // Find all sources that overlap with this segment
+                const activeSources = metadata.srcList?.filter(src => {
+                    // Get the end position of this source (start of next source or end of call)
+                    const nextSource = metadata.srcList.find(s => s.pos > src.pos);
+                    const sourceEndPos = nextSource ? nextSource.pos : metadata.call_length;
+                    
+                    // Check if this source's time window overlaps with the segment
+                    return (src.pos <= segmentEndPos && sourceEndPos >= segmentStartPos) && src.src !== -1;
+                }) || [];
                 
                 const freqData = metadata.freqList?.filter(freq =>
                     freq.pos >= segment.start && freq.pos <= segment.end
@@ -143,12 +153,13 @@ async function transcribeAudio(audioData, metadata, callId) {
                 };
             });
 
-            // Update the call with transcription
+            // Update the call with transcription and raw result
             const existingCall = recentCalls.get(callId);
             if (existingCall) {
                 existingCall.transcription = {
                     segments: cleanAndMergeSegments(processedSegments)
                 };
+                existingCall.originalMessage.whisperResult = result;
                 recentCalls.set(callId, existingCall);
             }
         }

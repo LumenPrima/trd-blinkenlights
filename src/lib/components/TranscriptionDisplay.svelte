@@ -7,7 +7,7 @@
         const prevUnit = index > 0 ? transcription.segments[index - 1].sources?.[0]?.id : null;
         return {
             ...segment,
-            showUnit: currentUnit !== prevUnit,
+            showUnit: currentUnit !== prevUnit, // Only show unit ID when it changes
             hasError: segment.quality_metrics.error_count > 0,
             lowConfidence: segment.quality_metrics.avg_logprob < -0.5
         };
