@@ -99,7 +99,7 @@ export async function handle({ event, resolve }) {
                 });
             },
             cancel() {
-                subscribers.clear();
+                subscribers.delete(subscriber);  // Only remove this subscriber
             }
         });
 

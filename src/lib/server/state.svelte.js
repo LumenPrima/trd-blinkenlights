@@ -65,7 +65,13 @@ export function updateCalls(callsData) {
     
     // Add or update active calls
     callsData.forEach(call => {
-        calls.set(call.id, call);
+        // Ensure we preserve both talkgroup tag fields
+        const callData = {
+            ...call,
+            talkgroup_alpha_tag: call.talkgroup_alpha_tag,  // From the active call message
+            talkgroup_tag: call.talkgroup_tag  // From the active call message
+        };
+        calls.set(call.id, callData);
     });
 }
 
@@ -156,11 +162,17 @@ async function transcribeAudio(audioData, metadata, callId) {
             // Update the call with transcription and raw result
             const existingCall = recentCalls.get(callId);
             if (existingCall) {
-                existingCall.transcription = {
-                    segments: cleanAndMergeSegments(processedSegments)
+                const updatedCall = {
+                    ...existingCall,
+                    transcription: {
+                        segments: cleanAndMergeSegments(processedSegments)
+                    },
+                    originalMessage: {
+                        ...existingCall.originalMessage,
+                        whisperResult: result
+                    }
                 };
-                existingCall.originalMessage.whisperResult = result;
-                recentCalls.set(callId, existingCall);
+                recentCalls.set(callId, updatedCall);
             }
         }
     } catch (error) {
@@ -174,11 +186,15 @@ export async function updateCallAudio(audioData) {
     const metadata = audioData.call.metadata;
     const callId = `${metadata.talkgroup}-${metadata.start_time}`;
     
+    // Get the active call data if it exists to get the proper talkgroup_tag
+    const activeCall = calls.get(callId);
+    
     // Create and store the call immediately
     const recentCall = {
         id: callId,
         talkgroup: metadata.talkgroup,
-        talkgroup_tag: metadata.talkgroup_tag,
+        talkgroup_tag: metadata.talkgroup_group_tag, // Audio message's group_tag corresponds to calls_active's tag
+        talkgroup_alpha_tag: metadata.talkgroup_tag, // Audio message's tag corresponds to calls_active's alpha_tag
         talkgroup_description: metadata.talkgroup_description,
         talkgroup_group: metadata.talkgroup_group,
         talkgroup_group_tag: metadata.talkgroup_group_tag,

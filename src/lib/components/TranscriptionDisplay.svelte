@@ -1,17 +1,10 @@
 <script>
+    import { processTranscriptionSegments } from '$lib/utils/transcription.js';
+
     /** @type {{ segments: any[] }} */
     export let transcription;
 
-    $: segments = transcription.segments.map((segment, index) => {
-        const currentUnit = segment.sources?.[0]?.id;
-        const prevUnit = index > 0 ? transcription.segments[index - 1].sources?.[0]?.id : null;
-        return {
-            ...segment,
-            showUnit: currentUnit !== prevUnit, // Only show unit ID when it changes
-            hasError: segment.quality_metrics.error_count > 0,
-            lowConfidence: segment.quality_metrics.avg_logprob < -0.5
-        };
-    });
+    $: segments = processTranscriptionSegments(transcription);
 </script>
 
 <div class="space-y-1.5">
@@ -35,7 +28,7 @@
                 {#if segment.showUnit && segment.sources?.length}
                     <div class="flex gap-1 mb-0.5">
                         {#each segment.sources as source}
-                            <span class="px-1 py-px text-xs font-mono bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400">
+                            <span class="px-1 py-px text-xs font-mono bg-gray-100 dark:bg-gray-900 rounded text-gray-700 dark:text-gray-300">
                                 {source.id}
                             </span>
                         {/each}

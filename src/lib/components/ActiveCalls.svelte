@@ -30,32 +30,13 @@
                 bytes[i] = binaryString.charCodeAt(i);
             }
 
-            // Create blob and audio element
+            // Create and play audio
             const audioBlob = new Blob([bytes], { type: 'audio/mp4; codecs="mp4a.40.2"' });
             const audioUrl = URL.createObjectURL(audioBlob);
-            const audioElement = new Audio();
-
-            // Set up event handlers
-            audioElement.onerror = (e) => {
-                console.error('Audio playback error:', e);
-                alert('Failed to play audio');
-                URL.revokeObjectURL(audioUrl);
-            };
-
-            audioElement.onended = () => {
-                URL.revokeObjectURL(audioUrl);
-            };
-
-            // Set source and load
-            audioElement.src = audioUrl;
-            audioElement.load();
-
-            // Start playback
-            audioElement.play().catch(error => {
-                console.error('Audio play failed:', error);
-                alert('Failed to start audio playback');
-                URL.revokeObjectURL(audioUrl);
-            });
+            const audioElement = new Audio(audioUrl);
+            
+            audioElement.onended = () => URL.revokeObjectURL(audioUrl);
+            audioElement.play();
 
         } catch (error) {
             console.error('Error processing audio:', error);
@@ -95,7 +76,7 @@
             <div class="call-card p-6 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-1 min-w-0">
                 <div class="flex justify-between items-start gap-2 mb-2">
                     <h3 class="text-lg font-semibold truncate text-gray-900 dark:text-gray-100">
-                        {call.talkgroup_tag || `Talkgroup ${call.talkgroup}`}
+                    {call.talkgroup_alpha_tag}
                     </h3>
                     <span class="status-badge {getCallStateClass(call)} shrink-0">
                         {call.call_state_type}
@@ -135,7 +116,7 @@
                 <div class="call-card border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow duration-200 ease-in-out min-w-0">
                     <div class="flex justify-between items-start gap-2 mb-2">
                         <h3 class="text-lg font-semibold truncate text-gray-900 dark:text-gray-100">
-                            {call.talkgroup_tag || `Talkgroup ${call.talkgroup}`}
+                            {call.talkgroup_alpha_tag}
                         </h3>
                     </div>
                     <div class="border-b border-gray-100/50 dark:border-gray-700/30 mb-2"></div>
