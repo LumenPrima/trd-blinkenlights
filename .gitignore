@@ -34,3 +34,6 @@ pnpm-debug.log*
 # Configuration files
 /openapi.json
 /scratch.json
+
+# Testing directory
+/testing
