@@ -19,18 +19,33 @@
 <div class="metrics-panel p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
     <h2 class="text-lg font-bold mb-4">Client Metrics</h2>
     
-    <div class="grid grid-cols-3 gap-4 mb-4">
+    <div class="grid grid-cols-4 gap-4 mb-4">
         <div class="metric-card">
             <div class="metric-value">{metrics.totalClients}</div>
-            <div class="metric-label">Connected Clients</div>
+            <div class="metric-label">WS Clients</div>
         </div>
         <div class="metric-card">
             <div class="metric-value">{metrics.totalMessages}</div>
-            <div class="metric-label">Total Messages</div>
+            <div class="metric-label">WS Messages</div>
         </div>
         <div class="metric-card">
-            <div class="metric-value">{(metrics.totalBytes / 1024).toFixed(2)} KB</div>
-            <div class="metric-label">Data Sent</div>
+            <div class="metric-value">{metrics.totalAudioClients}</div>
+            <div class="metric-label">Audio Clients</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{metrics.totalAudioMessages}</div>
+            <div class="metric-label">Audio Messages</div>
+        </div>
+    </div>
+
+    <div class="my-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div class="text-center">
+            <div class="text-2xl font-bold">
+                {(metrics.totalData / 1048576).toFixed(2)} MB
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                Total Data Transferred
+            </div>
         </div>
     </div>
 
