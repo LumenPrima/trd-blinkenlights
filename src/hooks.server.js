@@ -94,11 +94,12 @@ export async function handle({ event, resolve }) {
                 });
 
                 const subscriber = (audioData) => {
-                    // Apply filters
+                    // Apply filters first
                     if (talkgroups.length > 0 && 
                         !talkgroups.includes(audioData.call.metadata.talkgroup)) {
                         return;
                     }
+                    
                     try {
                         const message = JSON.stringify({
                             type: 'audio',
@@ -111,6 +112,7 @@ export async function handle({ event, resolve }) {
                         const encoded = `data: ${message}\n\n`;
                         const byteLength = Buffer.byteLength(encoded);
                         
+                        // Update metrics only for this client
                         const metrics = audioMetrics.get(clientId);
                         if (metrics) {
                             metrics.audioBytes += byteLength;
@@ -209,6 +211,7 @@ export async function handle({ event, resolve }) {
 
     // Handle metrics endpoint
     if (event.url.pathname === '/api/metrics') {
+        // Calculate totals from client-specific metrics
         const totalAudioBytes = Array.from(audioMetrics.values())
             .reduce((sum, m) => sum + m.audioBytes, 0);
             
