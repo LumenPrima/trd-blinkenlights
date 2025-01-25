@@ -51,6 +51,27 @@
                     <p><span class="font-medium">Frequency:</span> {formatFrequency(recorder.freq)}</p>
                     <p><span class="font-medium">Duration:</span> {formatDuration(recorder.duration)}</p>
                     <p><span class="font-medium">Calls:</span> {recorder.count}</p>
+                    
+                    {#if recorder.current_call}
+                        <div class="mt-3 pt-3 border-t border-gray-100/50 dark:border-gray-700/30">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Processing call {recorder.current_call.id}
+                            </p>
+                        </div>
+                    {/if}
+                    
+                    {#if recorder.state_history?.length > 0}
+                        <div class="mt-3 pt-3 border-t border-gray-100/50 dark:border-gray-700/30">
+                            <div class="text-xs space-y-1">
+                                {#each recorder.state_history.slice(-3) as transition}
+                                    <div class="flex justify-between text-gray-500 dark:text-gray-400">
+                                        <span>{transition.state}</span>
+                                        <span>{formatDuration(transition.duration)}s</span>
+                                    </div>
+                                {/each}
+                            </div>
+                        </div>
+                    {/if}
                 </div>
             </div>
         {/each}

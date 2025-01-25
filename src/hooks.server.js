@@ -31,30 +31,29 @@ async function init() {
         try {
             const data = JSON.parse(message.toString());
             
-            switch (topic) {
-                case `${config.mqtt.topicPrefix}/recorder`:
-                    if (data.type === 'recorder' && data.recorder) {
-                        state.updateRecorders([data.recorder]);
-                        notifySubscribers();
-                    }
-                    break;
-                case `${config.mqtt.topicPrefix}/systems`:
+            const [,,category] = topic.split('/');
+            
+            // Unified recorder handler
+            if (category === 'recorders' || category === 'recorder') {
+                const recordersData = data.recorders || [data.recorder];
+                state.updateRecorders(recordersData.filter(Boolean));
+                notifySubscribers();
+            }
+            // Handle other message types
+            else switch (category) {
+                case 'systems':
                     state.updateSystems(data.systems);
                     notifySubscribers();
                     break;
-                case `${config.mqtt.topicPrefix}/rates`:
+                case 'rates':
                     state.updateRates(data.rates);
                     notifySubscribers();
                     break;
-                case `${config.mqtt.topicPrefix}/calls_active`:
+                case 'calls_active':
                     state.updateCalls(data.calls);
                     notifySubscribers();
                     break;
-                case `${config.mqtt.topicPrefix}/recorders`:
-                    state.updateRecorders(data.recorders);
-                    notifySubscribers();
-                    break;
-                case `${config.mqtt.topicPrefix}/audio`:
+                case 'audio':
                     state.updateCallAudio(data);
                     notifySubscribers();
                     break;

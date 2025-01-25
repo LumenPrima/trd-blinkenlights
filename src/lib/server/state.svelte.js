@@ -186,6 +186,24 @@ export async function updateCallAudio(audioData) {
     const metadata = audioData.call.metadata;
     const callId = `${metadata.talkgroup}-${metadata.start_time}`;
     
+    // Get recorder state
+    const recorderId = `${metadata.source_num}_${metadata.recorder_num}`;
+    const recorder = recorders.get(recorderId);
+
+    // Add atomic state transition
+    if (recorder && recorder.rec_state_type === 'RECORDING') {
+        recorders.set(recorderId, {
+            ...recorder,
+            rec_state_type: 'PROCESSING_AUDIO',
+            current_call: {
+                id: callId,
+                start: metadata.start_time,
+                talkgroup: metadata.talkgroup,
+                frequency: metadata.freq
+            }
+        });
+    }
+    
     // Get the active call data if it exists to get the proper talkgroup_tag
     const activeCall = calls.get(callId);
     
@@ -231,6 +249,15 @@ export async function updateCallAudio(audioData) {
             recentCalls.set(id, call);
         }
     });
+
+    // Restore recorder state on completion
+    if (recorder) {
+        recorders.set(recorderId, {
+            ...recorders.get(recorderId),
+            rec_state_type: 'AVAILABLE',
+            current_call: null
+        });
+    }
 }
 
 export function updateRecorders(recordersData) {
