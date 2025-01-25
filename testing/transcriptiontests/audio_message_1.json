@@ -1,0 +1,55 @@
+{
+  "type": "audio",
+  "call": {
+    "audio_wav_base64": "Uk",
+    "audio_m4a_base64": "AA",
+    "metadata": {
+      "freq": 853387500,
+      "freq_error": 119,
+      "signal": 999,
+      "noise": 999,
+      "source_num": 0,
+      "recorder_num": 2,
+      "tdma_slot": 0,
+      "phase2_tdma": 0,
+      "start_time": 1737429299,
+      "stop_time": 1737429304,
+      "emergency": 0,
+      "priority": 4,
+      "mode": 0,
+      "duplex": 0,
+      "encrypted": 0,
+      "call_length": 5,
+      "talkgroup": 48595,
+      "talkgroup_tag": "83 LEB POLICE",
+      "talkgroup_description": "Lebanon Police Primary Dispatch",
+      "talkgroup_group_tag": "Law Dispatch",
+      "talkgroup_group": "Warren County (83) Law",
+      "audio_type": "digital",
+      "short_name": "warco2",
+      "freqList": [
+        {
+          "freq": 853387500,
+          "time": 1737429299,
+          "pos": 0,
+          "len": 5.04,
+          "error_count": 25,
+          "spike_count": 7
+        }
+      ],
+      "srcList": [
+        {
+          "src": 8343305,
+          "time": 1737429299,
+          "pos": 0,
+          "emergency": 0,
+          "signal_system": "",
+          "tag": ""
+        }
+      ],
+      "filename": "48595-1737429299_853387500.0-call_1457.wav"
+    }
+  },
+  "timestamp": 1737429308,
+  "instance_id": "trunk-recorder"
+}

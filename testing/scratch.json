@@ -1,0 +1,41 @@
+{
+    "type": "calls_active",
+    "calls": [
+        {
+            "id": "0_48549_1737203891",
+            "call_num": 31,
+            "sys_num": 0,
+            "sys_name": "warco",
+            "freq": 853937500.0,
+            "unit": 8342315,
+            "unit_alpha_tag": "",
+            "talkgroup": 48549,
+            "talkgroup_alpha_tag": "83 FRK POLICE",
+            "talkgroup_description": "Franklin Police Primary",
+            "talkgroup_group": "Warren County (83) Law",
+            "talkgroup_tag": "Law Dispatch",
+            "talkgroup_patches": "",
+            "elapsed": 12,
+            "length": 7.92,
+            "call_state": 1,
+            "call_state_type": "RECORDING",
+            "mon_state": 0,
+            "mon_state_type": "UNSPECIFIED",
+            "audio_type": "digital",
+            "phase2_tdma": false,
+            "tdma_slot": 0,
+            "analog": false,
+            "rec_num": 0,
+            "src_num": 0,
+            "rec_state": 4,
+            "rec_state_type": "IDLE",
+            "conventional": false,
+            "encrypted": false,
+            "emergency": false,
+            "start_time": 1737203891,
+            "stop_time": 1737203891
+        }
+    ],
+    "timestamp": 1737203903,
+    "instance_id": "trunk-recorder"
+}

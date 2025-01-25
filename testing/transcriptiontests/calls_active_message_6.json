@@ -1,0 +1,41 @@
+{
+  "type": "calls_active",
+  "calls": [
+    {
+      "id": "0_48683_1737429307",
+      "call_num": 1458,
+      "sys_num": 0,
+      "sys_name": "warco2",
+      "freq": 857762500,
+      "unit": 8301007,
+      "unit_alpha_tag": "",
+      "talkgroup": 48683,
+      "talkgroup_alpha_tag": "83 PD INQUIRY",
+      "talkgroup_description": "Police Inquiry",
+      "talkgroup_group": "Warren County (83) Law",
+      "talkgroup_tag": "Law Tac",
+      "talkgroup_patches": "",
+      "elapsed": 3,
+      "length": 0,
+      "call_state": 0,
+      "call_state_type": "MONITORING",
+      "mon_state": 5,
+      "mon_state_type": "ENCRYPTED",
+      "audio_type": "digital",
+      "phase2_tdma": false,
+      "tdma_slot": 0,
+      "analog": false,
+      "rec_num": -1,
+      "src_num": -1,
+      "rec_state": -1,
+      "rec_state_type": "",
+      "conventional": false,
+      "encrypted": true,
+      "emergency": false,
+      "start_time": 1737429307,
+      "stop_time": 1737429307
+    }
+  ],
+  "timestamp": 1737429310,
+  "instance_id": "trunk-recorder"
+}
