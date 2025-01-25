@@ -79,6 +79,8 @@ export async function handle({ event, resolve }) {
     // Handle audio SSE endpoint
     if (event.url.pathname === '/api/sse/audio') {
         const clientId = crypto.randomUUID();
+        const url = new URL(event.url);
+        const talkgroups = url.searchParams.get('talkgroups')?.split(',').map(Number) || [];
         
         const stream = new ReadableStream({
             start(controller) {
@@ -87,10 +89,16 @@ export async function handle({ event, resolve }) {
                     audioBytes: 0,
                     audioMessages: 0,
                     ip: event.getClientAddress(),
-                    userAgent: event.request.headers.get('user-agent')
+                    userAgent: event.request.headers.get('user-agent'),
+                    filters: { talkgroups }
                 });
 
                 const subscriber = (audioData) => {
+                    // Apply filters
+                    if (talkgroups.length > 0 && 
+                        !talkgroups.includes(audioData.call.metadata.talkgroup)) {
+                        return;
+                    }
                     try {
                         const message = JSON.stringify({
                             type: 'audio',
