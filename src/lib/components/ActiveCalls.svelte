@@ -5,33 +5,24 @@
     let { data } = $props();
 
     function playAudio(call) {
-        if (!call.audio?.m4a) {
+        if (!call.audio?.wav) {
             alert('No audio available for this call');
             return;
         }
 
         try {
             // Handle both raw base64 and data URI formats
-            const base64Data = call.audio.m4a.replace(/^data:audio\/mp4;base64,/, '');
+            const base64Data = call.audio.wav.replace(/^data:audio\/wav;base64,/, '');
             
-            // Decode base64 string with error handling
-            let binaryString;
-            try {
-                binaryString = atob(base64Data);
-            } catch (e) {
-                console.error('Base64 decode error:', e);
-                alert('Failed to decode audio data');
-                return;
-            }
-
             // Convert to Uint8Array
+            const binaryString = atob(base64Data);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
                 bytes[i] = binaryString.charCodeAt(i);
             }
 
             // Create and play audio
-            const audioBlob = new Blob([bytes], { type: 'audio/mp4; codecs="mp4a.40.2"' });
+            const audioBlob = new Blob([bytes], { type: 'audio/wav' });
             const audioUrl = URL.createObjectURL(audioBlob);
             const audioElement = new Audio(audioUrl);
             
@@ -151,12 +142,20 @@
                             <button 
                                 class="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
                                 on:click={() => playAudio(call)}
+                                disabled={!call.audio?.wav}
                             >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Play Audio
+                                {#if call.audio?.wav}
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Play Audio
+                                {:else}
+                                    <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Processing...
+                                {/if}
                             </button>
                             <button 
                                 class="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30 rounded hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition-colors"

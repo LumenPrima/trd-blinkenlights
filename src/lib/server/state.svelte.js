@@ -225,8 +225,8 @@ export async function updateCallAudio(audioData) {
         sys_name: metadata.short_name,
         finishedAt: Date.now(),
         audio: {
-            available: true,
-            format: 'm4a'
+            wav: audioData.call.audio_wav_base64, // Store raw base64
+            m4a: null // Will be generated on demand
         },
         originalMessage: audioData
     };
