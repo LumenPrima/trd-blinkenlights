@@ -2,6 +2,7 @@
     import '../app.css';
     import ThemeToggle from '$lib/components/ThemeToggle.svelte';
     import StatusDots from '$lib/components/StatusDots.svelte';
+    import ClientMetrics from '$lib/components/ClientMetrics.svelte';
 
     /** @type {import('./$types').LayoutData} */
     export let data;
@@ -24,5 +25,8 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <slot />
+        <div class="mt-8">
+            <ClientMetrics />
+        </div>
     </main>
 </div>

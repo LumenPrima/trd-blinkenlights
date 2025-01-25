@@ -1,9 +1,11 @@
 import * as mqtt from 'mqtt';
 import * as state from '$lib/server/state.svelte.js';
 import { config } from '$lib/config.js';
+import { Buffer } from 'buffer';
 
 let client;
 let subscribers = new Set();
+const clientMetrics = new Map(); // clientId → { bytesSent, messageCount }
 
 function notifySubscribers() {
     subscribers.forEach(subscriber => {
@@ -73,13 +75,33 @@ export async function handle({ event, resolve }) {
 
     // Handle SSE endpoint
     if (event.url.pathname === '/api/sse') {
+        const clientId = crypto.randomUUID();
+        
         const stream = new ReadableStream({
             start(controller) {
+                clientMetrics.set(clientId, {
+                    connectedAt: Date.now(),
+                    bytesSent: 0,
+                    messageCount: 0,
+                    ip: event.getClientAddress(),
+                    userAgent: event.request.headers.get('user-agent')
+                });
+
                 const subscriber = () => {
+                    const message = 'data: update\n\n';
+                    const byteLength = Buffer.byteLength(message, 'utf8');
+                    
+                    const metrics = clientMetrics.get(clientId);
+                    if (metrics) {
+                        metrics.bytesSent += byteLength;
+                        metrics.messageCount++;
+                    }
+                    
                     try {
-                        controller.enqueue('data: update\n\n');
+                        controller.enqueue(message);
                     } catch (error) {
                         subscribers.delete(subscriber);
+                        clientMetrics.delete(clientId);
                     }
                 };
                 
@@ -89,6 +111,9 @@ export async function handle({ event, resolve }) {
                 // Clean up on connection close
                 event.platform?.on('close', () => {
                     subscribers.delete(subscriber);
+                    if (clientMetrics.has(clientId)) {
+                        clientMetrics.get(clientId).disconnectedAt = Date.now();
+                    }
                     console.log(`Client disconnected. Total clients: ${subscribers.size}`);
                     try {
                         controller.close();
@@ -108,6 +133,18 @@ export async function handle({ event, resolve }) {
                 'Cache-Control': 'no-cache',
                 Connection: 'keep-alive'
             }
+        });
+    }
+
+    // Handle metrics endpoint
+    if (event.url.pathname === '/api/metrics') {
+        return new Response(JSON.stringify({
+            totalClients: clientMetrics.size,
+            totalBytes: Array.from(clientMetrics.values()).reduce((sum, m) => sum + m.bytesSent, 0),
+            totalMessages: Array.from(clientMetrics.values()).reduce((sum, m) => sum + m.messageCount, 0),
+            clients: Object.fromEntries(clientMetrics)
+        }), {
+            headers: { 'Content-Type': 'application/json' }
         });
     }
 
