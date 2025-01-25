@@ -21,6 +21,9 @@ export const recorders = $state(new SvelteMap());
 // Keep track of rate history for graphs
 export const rateHistory = $state(new SvelteMap());
 
+// Store audio data separately from state
+export const audioStore = new Map();
+
 // Update functions
 export function updateRates(data) {
     if (!data) return;
@@ -166,10 +169,6 @@ async function transcribeAudio(audioData, metadata, callId) {
                     ...existingCall,
                     transcription: {
                         segments: cleanAndMergeSegments(processedSegments)
-                    },
-                    originalMessage: {
-                        ...existingCall.originalMessage,
-                        whisperResult: result
                     }
                 };
                 recentCalls.set(callId, updatedCall);
@@ -207,12 +206,12 @@ export async function updateCallAudio(audioData) {
     // Get the active call data if it exists to get the proper talkgroup_tag
     const activeCall = calls.get(callId);
     
-    // Create and store the call immediately
+    // Create and store the call immediately, but without audio data
     const recentCall = {
         id: callId,
         talkgroup: metadata.talkgroup,
-        talkgroup_tag: metadata.talkgroup_group_tag, // Audio message's group_tag corresponds to calls_active's tag
-        talkgroup_alpha_tag: metadata.talkgroup_tag, // Audio message's tag corresponds to calls_active's alpha_tag
+        talkgroup_tag: metadata.talkgroup_group_tag,
+        talkgroup_alpha_tag: metadata.talkgroup_tag,
         talkgroup_description: metadata.talkgroup_description,
         talkgroup_group: metadata.talkgroup_group,
         talkgroup_group_tag: metadata.talkgroup_group_tag,
@@ -224,15 +223,18 @@ export async function updateCallAudio(audioData) {
         freq: metadata.freq,
         sys_name: metadata.short_name,
         finishedAt: Date.now(),
-        audio: {
-            wav: audioData.call.audio_wav_base64, // Store raw base64
-            m4a: null // Will be generated on demand
-        },
-        originalMessage: audioData
+        hasAudio: true // Flag indicating audio is available
     };
     
     // Add to recent calls immediately
     recentCalls.set(callId, recentCall);
+
+    // Store audio data separately from state
+    audioStore.set(callId, {
+        wav: audioData.call.audio_wav_base64,
+        m4a: null,
+        metadata: audioData
+    });
 
     // Attempt transcription in the background if WAV data is available
     if (audioData.call.audio_wav_base64 && config.whisper?.apiUrl) {

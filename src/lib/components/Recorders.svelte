@@ -30,12 +30,16 @@
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
+
+    const sortedRecorders = $derived(
+        [...data.recorders].sort((a, b) => a.rec_num - b.rec_num)
+    );
 </script>
 
 <div>
     <h2 class="text-2xl font-bold mb-4">Recorders</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {#each data.recorders.sort((a, b) => a.rec_num - b.rec_num) as recorder}
+        {#each sortedRecorders as recorder}
             <div class="recorder-card p-6 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-1">
                 <div class="flex justify-between items-start mb-3">
                     <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Recorder {recorder.rec_num}</h3>

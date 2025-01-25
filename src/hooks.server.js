@@ -3,6 +3,52 @@ import * as state from '$lib/server/state.svelte.js';
 import { config } from '$lib/config.js';
 import { Buffer } from 'buffer';
 
+// Helper functions for efficient state comparison
+function hashCalls(calls) {
+    return calls.map(call => `${call.id}:${call.finishedAt}`).join('|');
+}
+
+function hasRecorderStateChanges(current, previous) {
+    if (current.length !== previous.length) return true;
+    
+    for (let i = 0; i < current.length; i++) {
+        const curr = current[i];
+        const prev = previous[i];
+        if (curr.rec_state_type !== prev.rec_state_type || 
+            curr.last_state_change !== prev.last_state_change) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function hasRecentCallChanges(current, previous) {
+    if (current.length !== previous.length) return true;
+    
+    const currentIds = new Set(current.map(call => call.id));
+    const previousIds = new Set(previous.map(call => call.id));
+    
+    // Check for added or removed calls
+    for (const id of currentIds) {
+        if (!previousIds.has(id)) return true;
+    }
+    for (const id of previousIds) {
+        if (!currentIds.has(id)) return true;
+    }
+    
+    // Check for changes in call properties (excluding audio)
+    for (let i = 0; i < current.length; i++) {
+        const curr = current[i];
+        const prev = previous[i];
+        if (curr.finishedAt !== prev.finishedAt ||
+            curr.elapsed !== prev.elapsed ||
+            curr.emergency !== prev.emergency) {
+            return true;
+        }
+    }
+    return false;
+}
+
 let client;
 let subscribers = new Set();
 let audioSubscribers = new Set();
@@ -160,8 +206,90 @@ export async function handle({ event, resolve }) {
                     userAgent: event.request.headers.get('user-agent')
                 });
 
+                // Keep track of previous state for this client
+                let previousState = {
+                    systems: [],
+                    rates: [],
+                    rateHistory: {},
+                    calls: [],
+                    recorders: [],
+                    recentCalls: []
+                };
+
                 const subscriber = () => {
-                    const message = 'data: update\n\n';
+                    // Create minimal state without audio data
+                    const currentState = {
+                        systems: state.systems,
+                        rates: state.rates,
+                        rateHistory: Object.fromEntries(state.rateHistory),
+                        calls: Array.from(state.calls.values()).map(call => ({
+                            ...call,
+                            audio: undefined,
+                            originalMessage: undefined
+                        })),
+                        recorders: Array.from(state.recorders.values()),
+                        recentCalls: Array.from(state.recentCalls.values()).map(call => ({
+                            ...call,
+                            audio: undefined,
+                            originalMessage: undefined,
+                            whisperResult: undefined
+                        }))
+                    };
+
+                    // Calculate changes more efficiently
+                    const changes = {};
+                    
+                    // Simple array comparisons for systems and rates
+                    if (currentState.systems.length !== previousState.systems.length) {
+                        changes.systems = currentState.systems;
+                    }
+                    if (currentState.rates.length !== previousState.rates.length) {
+                        changes.rates = currentState.rates;
+                    }
+                    
+                    // Compare calls by ID and content hash
+                    const currentCallsHash = hashCalls(currentState.calls);
+                    const prevCallsHash = hashCalls(previousState.calls);
+                    if (currentCallsHash !== prevCallsHash) {
+                        changes.calls = currentState.calls;
+                    }
+                    
+                    // Compare recorders by state type changes
+                    if (hasRecorderStateChanges(currentState.recorders, previousState.recorders)) {
+                        changes.recorders = currentState.recorders;
+                    }
+                    
+                    // Compare recent calls by ID only since audio is separate
+                    if (hasRecentCallChanges(currentState.recentCalls, previousState.recentCalls)) {
+                        changes.recentCalls = currentState.recentCalls.map(call => ({
+                            ...call,
+                            audio: undefined // Ensure audio is not included
+                        }));
+                    }
+                    
+                    // Compare rate history by keys
+                    const currentKeys = Object.keys(currentState.rateHistory);
+                    const previousKeys = Object.keys(previousState.rateHistory);
+                    if (currentKeys.length !== previousKeys.length || 
+                        currentKeys.some(key => !previousState.rateHistory[key])) {
+                        changes.rateHistory = currentState.rateHistory;
+                    }
+
+                    // Only send if there are changes
+                    const hasChanges = Object.values(changes).some(v => v !== undefined);
+                    if (!hasChanges) return;
+
+                    // Update previous state
+                    previousState = {
+                        systems: [...currentState.systems],
+                        rates: [...currentState.rates],
+                        rateHistory: currentState.rateHistory,
+                        calls: [...currentState.calls],
+                        recorders: [...currentState.recorders],
+                        recentCalls: [...currentState.recentCalls]
+                    };
+
+                    const message = `data: ${JSON.stringify(changes)}\n\n`;
                     const byteLength = Buffer.byteLength(message, 'utf8');
                     
                     const metrics = clientMetrics.get(clientId);

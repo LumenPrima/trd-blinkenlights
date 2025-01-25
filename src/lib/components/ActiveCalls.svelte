@@ -4,34 +4,16 @@
     /** @type {{ data: { calls: any[], recentCalls: any[] } }} */
     let { data } = $props();
 
+    import { audioPlayer } from '$lib/stores/audio.js';
+
     function playAudio(call) {
-        if (!call.audio?.wav) {
+        if (!call.hasAudio) {
             alert('No audio available for this call');
             return;
         }
 
-        try {
-            // Handle both raw base64 and data URI formats
-            const base64Data = call.audio.wav.replace(/^data:audio\/wav;base64,/, '');
-            
-            // Convert to Uint8Array
-            const binaryString = atob(base64Data);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-
-            // Create and play audio
-            const audioBlob = new Blob([bytes], { type: 'audio/wav' });
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const audioElement = new Audio(audioUrl);
-            
-            audioElement.onended = () => URL.revokeObjectURL(audioUrl);
-            audioElement.play();
-
-        } catch (error) {
-            console.error('Error processing audio:', error);
-            alert('Failed to process audio');
+        if ($audioPlayer) {
+            $audioPlayer.playCall(call);
         }
     }
 
@@ -56,7 +38,7 @@
     const activeCalls = $derived(data.calls);
 
     const recentCalls = $derived(
-        data.recentCalls.sort((a, b) => b.finishedAt - a.finishedAt)
+        [...data.recentCalls].sort((a, b) => b.finishedAt - a.finishedAt)
     );
 </script>
 
@@ -132,7 +114,7 @@
                                 {:else if call.transcription?.segments}
                                     <TranscriptionDisplay transcription={call.transcription} />
                                 {/if}
-                            {:else if call.originalMessage?.call?.audio_wav_base64}
+                            {:else if call.hasAudio}
                                 <div class="text-xs text-gray-500 dark:text-gray-400 italic">
                                     Transcription in progress...
                                 </div>
@@ -142,9 +124,9 @@
                             <button 
                                 class="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
                                 on:click={() => playAudio(call)}
-                                disabled={!call.audio?.wav}
+                                disabled={!call.hasAudio}
                             >
-                                {#if call.audio?.wav}
+                                {#if call.hasAudio}
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

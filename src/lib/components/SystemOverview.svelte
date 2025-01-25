@@ -4,7 +4,7 @@
     import uPlot from 'uplot';
     import 'uplot/dist/uPlot.min.css';
     
-    /** @type {{ data: { systems: any[], rates: any[], rateHistory: Map<string, any[]> } }} */
+    /** @type {{ data: { systems: any[], rates: any[], rateHistory: Record<string, any[]> } }} */
     let { data } = $props();
 
     function getSystemRate(systemName) {
@@ -163,7 +163,7 @@
                         {#if browser}
                             <div 
                                 class="w-full h-full" 
-                                use:initChart={data.rateHistory.get(system.sys_name)}
+                                use:initChart={data.rateHistory[system.sys_name]}
                                 role="img"
                                 aria-label="Message rate chart"
                             ></div>

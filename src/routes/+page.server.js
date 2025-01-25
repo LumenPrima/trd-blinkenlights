@@ -5,9 +5,18 @@ export function load() {
     return {
         systems,
         rates,
-        rateHistory,
-        calls: Array.from(calls.values()),
+        rateHistory: Object.fromEntries(rateHistory),
+        calls: Array.from(calls.values()).map(call => ({
+            ...call,
+            audio: undefined,
+            originalMessage: undefined
+        })),
         recorders: Array.from(recorders.values()),
-        recentCalls: Array.from(recentCalls.values())
+        recentCalls: Array.from(recentCalls.values()).map(call => ({
+            ...call,
+            audio: undefined,
+            originalMessage: undefined,
+            whisperResult: undefined
+        }))
     };
 }

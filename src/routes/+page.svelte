@@ -1,6 +1,5 @@
 <script>
     import { onMount } from 'svelte';
-    import { invalidateAll } from '$app/navigation';
     import SystemOverview from '$lib/components/SystemOverview.svelte';
     import ActiveCalls from '$lib/components/ActiveCalls.svelte';
     import Recorders from '$lib/components/Recorders.svelte';
@@ -9,6 +8,7 @@
     let { data } = $props();
 
     let activeTab = $state('overview');
+    let currentState = $state({...data});
 
     let audioEventSource;
     
@@ -25,8 +25,14 @@
 
     onMount(() => {
         const eventSource = new EventSource('/api/sse');
-        eventSource.onmessage = () => {
-            invalidateAll();
+        eventSource.onmessage = (e) => {
+            const changes = JSON.parse(e.data);
+            // Only update changed portions of the state
+            Object.entries(changes).forEach(([key, value]) => {
+                if (value !== undefined) {
+                    currentState[key] = value;
+                }
+            });
         };
 
         return () => {
