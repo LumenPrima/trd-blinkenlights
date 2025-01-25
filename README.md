@@ -48,13 +48,19 @@ src/
 │   │   ├── Recorders.svelte      # Recording system status
 │   │   ├── StatusDots.svelte     # Header status indicators
 │   │   ├── SystemOverview.svelte # System status dashboard
-│   │   └── ThemeToggle.svelte    # Dark/light mode toggle
-│   └── server/
-│       └── state.svelte.js       # Server-side state management
+│   │   ├── ThemeToggle.svelte    # Dark/light mode toggle
+│   │   └── TranscriptionDisplay.svelte # Transcription display component
+│   ├── server/
+│   │   ├── state.svelte.js       # Server-side state management
+│   │   └── transcription.js      # Transcription processing logic
+│   └── stores/
+│       └── theme.js              # Theme management store
 ├── routes/
 │   ├── +layout.svelte           # Root layout
 │   ├── +page.server.js          # Server-side logic
-│   └── +page.svelte            # Main page component
+│   ├── +page.svelte            # Main page component
+│   └── flag-call/
+│       └── +server.js           # Flagged call endpoint
 └── app.html                     # HTML template
 ```
 
@@ -67,6 +73,9 @@ src/
 - System overview dashboard with real-time charts
 - MQTT-based real-time updates
 - Dark/light mode support
+- Real-time transcription display and processing
+- Flagged call handling and endpoint
+- Comprehensive testing suite for transcription functionality
 
 ## Development Notes
 
@@ -75,6 +84,8 @@ src/
 - MQTT is used for real-time data updates
 - uPlot provides efficient data visualization
 - Status indicators show real-time recorder states
+- Server hooks for initialization and configuration
+- Theme management through centralized store
 
 ## License
 

@@ -10,15 +10,28 @@
 
     let activeTab = $state('overview');
 
+    let audioEventSource;
+    
+    function connectAudioSSE(filters = {}) {
+        if (audioEventSource) audioEventSource.close();
+        const params = new URLSearchParams(filters);
+        audioEventSource = new EventSource(`/api/sse/audio?${params}`);
+        
+        audioEventSource.onmessage = (e) => {
+            const audioEvent = JSON.parse(e.data);
+            console.log('Audio metadata:', audioEvent);
+        };
+    }
+
     onMount(() => {
         const eventSource = new EventSource('/api/sse');
-        
         eventSource.onmessage = () => {
             invalidateAll();
         };
 
         return () => {
             eventSource.close();
+            if (audioEventSource) audioEventSource.close();
         };
     });
 </script>

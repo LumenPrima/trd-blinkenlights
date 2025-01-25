@@ -1,0 +1,16 @@
+{
+  "name": "mqtt-analysis",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "capture-all-topics.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "mqtt": "^5.3.3"
+  }
+}

@@ -26,6 +26,14 @@ if (browser) {
       document.documentElement.classList.remove('dark');
     }
   });
+
+  // Listen for system theme changes
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  mediaQuery.addEventListener('change', e => {
+    if (!localStorage.getItem('theme')) {
+      darkMode.set(e.matches);
+    }
+  });
 }
 
 export { darkMode };
