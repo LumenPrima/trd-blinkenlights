@@ -11,8 +11,8 @@ export const config = {
     },
     system: {
         // System-wide constants
-        callCleanupInterval: 30 * 60 * 1000, // 30 minutes in milliseconds
-        maxRecentCalls: 100,
-        maxRateHistory: 100,
+        callCleanupInterval: parseInt(process.env.CALL_CLEANUP_INTERVAL) || 30 * 60 * 1000, // 30 minutes in milliseconds
+        maxRecentCalls: parseInt(process.env.MAX_RECENT_CALLS) || 100,
+        maxRateHistory: parseInt(process.env.MAX_RATE_HISTORY) || 100,
     }
 };
