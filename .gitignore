@@ -36,5 +36,5 @@ pnpm-debug.log*
 /scratch.json
 
 # Testing directory
-testing/mqtt-analysis/node_modules/*
+testing/mqtt-analysis/node_modules/
 .aider*
