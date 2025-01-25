@@ -12,13 +12,20 @@
 
     onMount(() => {
         const eventSource = new EventSource('/api/sse');
+        const audioEventSource = new EventSource('/api/sse/audio');
         
         eventSource.onmessage = () => {
             invalidateAll();
         };
 
+        audioEventSource.onmessage = (e) => {
+            const audioEvent = JSON.parse(e.data);
+            console.log('Audio event:', audioEvent);
+        };
+
         return () => {
             eventSource.close();
+            audioEventSource.close();
         };
     });
 </script>
